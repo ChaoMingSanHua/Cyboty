@@ -70,6 +70,15 @@ export default createStore({
     })
   },
   mutations: {
+    confirm(state, paras) {
+      state.D[0] = paras[0].value
+      state.A[1] = paras[1].value
+      state.A[2] = paras[2].value
+      state.D[2] = paras[3].value
+      state.A[3] = paras[4].value
+      state.D[3] = paras[5].value
+      state.D[5] = paras[6].value
+    }
   },
   actions: {
   },

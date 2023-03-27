@@ -1,5 +1,7 @@
 <template>
-<!--  <div ref="container">123</div>-->
+  <v-card class="container animated zoomIn">
+    <div class="canvas" ref="container"></div>
+  </v-card>
 </template>
 
 <script setup>
@@ -162,22 +164,27 @@ spotLight.castShadow = true
 scene.add(spotLight)
 
 // 4,创建相机对象
-const width = window.innerWidth;
-const height = window.innerHeight;
-const k = width / height;
-const s = 200;
+// const k = width / height;
+// const s = 200;
 const camera = new OrthographicCamera();
 camera.up.x = 0
 camera.up.y = 0
 camera.up.z = 1;
 camera.position.set(10, 10, 10);
 camera.lookAt(scene.position);
-// console.log(scene.position)
 
 // 5，创建渲染器
 const renderer = new THREE.WebGLRenderer();
-renderer.setSize(width, height);
-document.body.appendChild(renderer.domElement);
+
+// document.body.appendChild(renderer.domElement);
+// container.value.appendChild(renderer.domElement)
+onMounted(() => {
+  const width = container.value.offsetWidth;
+  const height = container.value.offsetHeight;
+  renderer.setSize(width, height);
+  container.value.appendChild(renderer.domElement)
+  console.log(width)
+})
 
 // const mesh1Axes = new THREE.AxesHelper(1)
 // mesh1Axes.position.set(0.1,0,0)
@@ -222,93 +229,23 @@ watch(() => [...store.state.Q], ((value, oldValue) => {
   // q6Delta.value = value[5] - oldValue[5]
 }))
 
-// const timer = setInterval(() => {
-//   store.state.Q[0] += 0.1
-//   // x1.value += 0.1
-//   // console.log(store.state.Q)
-// }, 1000)
-
-
-
-
-
-// onMounted(() => {
-  // 1，创建场景
-  // var scene = new THREE.Scene();
-  // // 创建STL加载器
-  // var stlLoader = new STLLoader();
-  // stlLoader.load('/ER15-1400/meshes/base_link.STL',geometry => {
-  //   var material = new THREE.MeshPhongMaterial({color:0xDDDADA});
-  //   var mesh = new THREE.Mesh(geometry,material);
-  //   // mesh.rotateX(3.1415926)
-  //   // mesh.rotateY(3.1415926)
-  //   // mesh.rotateZ(3.1415926)
-  //   scene.add(mesh);
-  // })
-  // stlLoader.load('/ER15-1400/meshes/link_1.STL',geometry => {
-  //   var material = new THREE.MeshPhongMaterial({color:0xDDDADA});
-  //   var mesh = new THREE.Mesh(geometry,material);
-  //
-  //   // console.log(mesh.position)
-  //   // 旋转相对于运动坐标系
-  //   // mesh.rotateZ(Math.PI / 4)
-  //   // mesh.rotateX(Math.PI / 4)
-  //   // mesh.rotateZ(Math.PI / 4)
-  //   mesh.rotateX(Math.PI / 2)
-  //   mesh.rotateY(store.state.Q[0])
-  //   // mesh.rotateZ(Math.PI / 2)
-  //   // 平移相对于世界坐标系
-  //   mesh.position.set(0, 0, 0.2)
-  //   scene.add(mesh);
-  // })
-  // // 3,创建灯光
-  // var point = new THREE.PointLight(0xffffff);
-  // point.position.set(0,0,0);
-  // scene.add(point);
-  // var point2 = new THREE.PointLight(0xffffff);
-  // point2.position.set(10,10,10);
-  // scene.add(point2);
-  //
-  // const ambientLight = new THREE.AmbientLight(0xffffff, 0.1) // 创建环境光
-  // scene.add(ambientLight) // 将环境光添加到场景
-  //
-  // const spotLight = new THREE.SpotLight(0xffffff) // 创建聚光灯
-  // spotLight.position.set(0, 0, 0)
-  // spotLight.castShadow = true
-  // scene.add(spotLight)
-  //
-  //
-  // // 4,创建相机对象
-  // var width = window.innerWidth;
-  // var height = window.innerHeight;
-  // var k = width / height;
-  // var s = 200;
-  // var camera = new OrthographicCamera();
-  // camera.up.x = 0
-  // camera.up.y = 0
-  // camera.up.z = 1;
-  // camera.position.set(10, 10, 10);
-  // camera.lookAt(scene.position);
-  // console.log(scene.position)
-  // // 5，创建渲染器
-  // var renderer = new THREE.WebGLRenderer();
-  // renderer.setSize(width, height);
-  // document.body.appendChild(renderer.domElement);
-  //
-  // function render() {
-  //   renderer.render(scene, camera);
-  //   requestAnimationFrame(render);
-  // }
-  // var controls = new OrbitControls(camera, renderer.domElement);
-  // var axes = new THREE.AxesHelper(1);
-  // scene.add(axes);
-  // render();
-// })
-
-
-
 </script>
 
-<style scoped>
+<style lang="scss" scoped>
+.container {
+  //position: fixed;
+  //top: 100px;
+  //right: 10px;
+  height: 500px;
+  margin-top: 160px;
+  position: sticky;
+  top: 100px;
+  //right: 20px;
+
+  .canvas {
+    height: 100%;
+    width: 100%;
+  }
+}
 
 </style>

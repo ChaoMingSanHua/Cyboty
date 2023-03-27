@@ -27,6 +27,10 @@ const routes = [
     path: '/inverse_kinematics',
     component: () => import('@/views/InverseKinematics')
   },
+  {
+    path: '/trajectory_planning',
+    component: () => import('@/views/TrajectoryPlanning')
+  }
 ]
 
 const router = createRouter({

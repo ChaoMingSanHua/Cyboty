@@ -1,67 +1,113 @@
 <template>
-  <h1>Cyboty</h1>
-  <input type="number" v-for="(value, index) of store.state.Q" v-model="store.state.Q[index]">
-  <div class="fkine">
-    <h1>正运动学</h1>
-    <div class="positionAndAttitude">
-      <div class="position">
-        <div>Px: {{store.getters.px}}</div>
-        <div>Py: {{store.getters.py}}</div>
-        <div>Pz: {{store.getters.pz}}</div>
-      </div>
-      <div class="attiture">
-        <div>roll: {{store.getters.roll}}</div>
-        <div>pitch: {{store.getters.pitch}}</div>
-        <div>yaw: {{store.getters.yaw}}</div>
+  <v-card class="model-container">
+    <h1 class="text-center">正运动学</h1>
+    <div class="input-container mt-4">
+      <div v-for="(value, index) of store.state.Q">
+        <!--        <p>关节1</p>-->
+        关节{{ index + 1 }}:
+        <input type="number" class="ml-4" v-model="store.state.Q[index]">
+        rad
       </div>
     </div>
-
-    <div>
-      <h2>变换矩阵</h2>
-      <table>
-        <tr v-for="i in 4">
-          <td v-for="j in 4">{{store.getters.T.get([i-1, j-1])}}</td>
-        </tr>
-      </table>
-    </div>
-  </div>
-
-  <inverse-kinematics />
-
-  <trajectory-planning />
-
-  <Suspense>
-    <template #default>
-      <STLModel />
-    </template>
-  </Suspense>
+    <v-row class="mt-4">
+      <v-col class="position-attitude" md="4" cols="12">
+        <h2>位置</h2>
+        <v-table>
+          <tbody>
+          <tr>
+            <td>Px:</td>
+            <td>{{ $filters.toFixed(store.getters.px) }}</td>
+          </tr>
+          <tr>
+            <td>Py</td>
+            <td>{{ $filters.toFixed(store.getters.py) }}</td>
+          </tr>
+          <tr>
+            <td>Pz:</td>
+            <td>{{ $filters.toFixed(store.getters.pz) }}</td>
+          </tr>
+          </tbody>
+        </v-table>
+      </v-col>
+      <v-col class="position-attitude" md="4" cols="12">
+        <h2>欧拉角</h2>
+        <v-table>
+          <tbody>
+          <tr>
+            <td>roll:</td>
+            <td>{{ $filters.toFixed(store.getters.roll) }}</td>
+          </tr>
+          <tr>
+            <td>pitch:</td>
+            <td>{{ $filters.toFixed(store.getters.pitch) }}</td>
+          </tr>
+          <tr>
+            <td>yaw:</td>
+            <td>{{ $filters.toFixed(store.getters.yaw) }}</td>
+          </tr>
+          </tbody>
+        </v-table>
+      </v-col>
+      <v-col class="position-attitude" md="4" cols="12">
+        <h2>变换矩阵</h2>
+        <v-table>
+          <tbody>
+          <tr v-for="i in 3">
+            <td v-for="j in 3">{{ $filters.toFixed(store.getters.T.get([i - 1, j - 1])) }}</td>
+          </tr>
+          </tbody>
+        </v-table>
+      </v-col>
+    </v-row>
+  </v-card>
 </template>
 
 <script setup>
-  import {defineAsyncComponent} from "vue";
-  import {useStore} from "vuex";
-  import InverseKinematics from "@/views/InverseKinematics"
-  import TrajectoryPlanning from "@/views/TrajectoryPlanning"
+import {defineAsyncComponent} from "vue";
+import {useStore} from "vuex";
+// import InverseKinematics from "@/views/InverseKinematics"
+// import TrajectoryPlanning from "@/views/TrajectoryPlanning"
 
-  const STLModel = defineAsyncComponent(() => import('@/components/STLModel'))
-  const store = useStore()
-  // console.log(store.state.Q)
+// const STLModel = defineAsyncComponent(() => import('@/components/STLModel'))
+const store = useStore()
+// console.log(store.state.Q)
 
 </script>
 
 <style lang="scss" scoped>
-.fkine {
-  display: flex;
-  flex-direction: row;
-  justify-content: space-between;
-  align-items: center;
-
-  .positionAndAttitude {
+.model-container {
+  .input-container {
     display: flex;
-    flex-direction: row;
+    //flex-direction: row;
+
+    input {
+      width: 40%;
+      border-width: 2px !important;
+      border-color: #000000;
+      border-radius: 10px;
+      border-style: solid;
+    }
+  }
+
+  .position-attitude {
+    display: flex;
+    flex-direction: column;
     justify-content: space-between;
     align-items: center;
+
+    //.position-attitude {
+    //  display: flex;
+    //  flex-direction: row;
+    //  justify-content: space-around;
+    //  align-items: center;
+    //}
+    //
+    //.rotationMatrix {
+    //  display: flex;
+    //  flex-direction: column;
+    //  justify-content: space-around;
+    //  align-items: center;
+    //}
   }
 }
-
 </style>

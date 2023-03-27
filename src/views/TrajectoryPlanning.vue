@@ -1,29 +1,63 @@
 <template>
-  <div class="trajectory">
-    <h1>轨迹规划</h1>
-    <input type="radio" name="trajSpace" :value="0" v-model="trajSpace"/> 关节空间
-    <input type="radio" name="trajSpace" :value="1" v-model="trajSpace"/> 笛卡尔空间
-    <br />
-    <input type="radio" name="planState" :value="0" v-model="planState"/> 三次多项式
-    <input type="radio" name="planState" :value="1" v-model="planState"/> 梯型速度
+  <v-card class="model-container">
+    <h1 class="text-center">轨迹规划</h1>
+    <v-row class="mt-4">
+      <v-col md="3" cols="12">
+        <input type="radio" name="trajSpace" :value="0" v-model="trajSpace"/> 关节空间
+      </v-col>
+      <v-col md="3" cols="12">
+        <input type="radio" name="trajSpace" :value="1" v-model="trajSpace"/> 笛卡尔空间
+      </v-col>
+    </v-row>
+    <v-row class="mt-4">
+      <v-col md="3" cols="12">
+        <input type="radio" name="planState" :value="0" v-model="planState"/> 三次多项式
+      </v-col>
+      <v-col md="3" cols="12">
+        <input type="radio" name="planState" :value="1" v-model="planState"/> 梯型速度
+      </v-col>
+    </v-row>
 
-    <div v-if="trajSpace === trajSpaceEnum.JOINT">
-      <input type="number" v-for="(value, index) of qTarget.list" v-model="qTarget.list[index]"/>
-    </div>
-    <div v-else-if="trajSpace === trajSpaceEnum.DESCARTES">
-      <input type="number" v-for="(value, index) of qTarget.list" v-model="xTarget.list[index]"/>
-    </div>
-    <button @click="trajPlanning">规划</button>
-    <div ref="jointPosition" style="width: 500px; height: 500px"></div>
-    <div ref="descartesPosition" style="width: 500px; height: 500px"></div>
+    <v-row class="input-container">
+      <v-col md="2" v-for="(value, index) of qTarget.list">
+        <template v-if="trajSpace === trajSpaceEnum.JOINT">
+          关节{{ index + 1 }}:<input class="ml-4" type="number" v-model="qTarget.list[index]"/>
+        </template>
+        <template v-else-if="trajSpace === trajSpaceEnum.DESCARTES">
+          <input type="number" v-model="xTarget.list[index]"/>
+        </template>
+      </v-col>
+    </v-row>
 
-    <div ref="jointVelocity" style="width: 500px; height: 500px"></div>
-    <div ref="descartesVelocity" style="width: 500px; height: 500px"></div>
-  </div>
+    <v-btn @click="trajPlanning" class="mx-auto d-block mt-4">规划</v-btn>
+
+    <v-row class="mt-4">
+      <v-col class="v-col-md-4 v-col-12">
+        <div ref="jointPosition" style="width: 100%; height: 300px"></div>
+      </v-col>
+      <v-col class="v-col-md-4 v-col-12">
+        <div ref="jointVelocity" style="width: 100%; height: 300px"></div>
+      </v-col>
+    </v-row>
+    <v-row class="mt-4">
+      <v-col class="v-col-md-4 v-col-12">
+        <div ref="descartesPosition" style="width: 100%; height: 300px"></div>
+      </v-col>
+      <v-col class="v-col-md-4 v-col-12">
+        <div ref="descartesVelocity" style="width: 100%; height: 300px"></div>
+      </v-col>
+    </v-row>
+
+
+<!--    <div ref="descartesPosition" style="width: 500px; height: 500px"></div>-->
+
+<!--    <div ref="jointVelocity" style="width: 500px; height: 500px"></div>-->
+<!--    <div ref="descartesVelocity" style="width: 500px; height: 500px"></div>-->
+  </v-card>
 </template>
 
 <script setup>
-import {reactive, ref, watch} from "vue";
+import {computed, reactive, ref, watch} from "vue";
 import {useStore} from "vuex";
 import * as math from "mathjs";
 import * as transformation from "@/utils/transformation";
@@ -41,10 +75,10 @@ const qStart = reactive({
   list: [0, 0, 0, 0, 0, 0]
 })
 const qTarget = reactive({
-  list: [0.5, 0.6, 0.0, 0.0, 0.0, 0.0]
+  list: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
 })
 const qNowArray = reactive([])
-const dqNow =reactive({
+const dqNow = reactive({
   list: [0, 0, 0, 0, 0, 0]
 })
 const dqNowArray = reactive([])
@@ -57,7 +91,7 @@ const xTarget = reactive({
 })
 const xNowArray = reactive([])
 const dxNow = reactive({
-  list: [0,0,0,0,0,0]
+  list: [0, 0, 0, 0, 0, 0]
 })
 const dxNowArray = reactive([])
 
@@ -104,7 +138,7 @@ const trajCubic = (tf) => {
   }
 }
 
-const trajTCurve = (vmax, amax) =>{
+const trajTCurve = (vmax, amax) => {
   let ta = vmax / amax;
   const pa = 0.5 * amax * math.pow(ta, 2)
   const tm = (1 - 2 * pa) / vmax
@@ -137,7 +171,7 @@ const interpolation = (trajPara, t) => {
         s = math.multiply(math.matrix([
           [1, t, math.pow(t, 2), math.pow(t, 3)]
         ]), trajPara.para).get([0, 0])
-        v =  math.multiply(math.matrix([
+        v = math.multiply(math.matrix([
           [0, 1, 2 * t, 3 * math.pow(t, 2)]
         ]), trajPara.para).get([0, 0])
       }
@@ -351,6 +385,16 @@ const renderDescartesVelocity = () => {
 
 </script>
 
-<style scoped>
-
+<style lang="scss" scoped>
+.model-container {
+  .input-container {
+    input {
+      width: 40%;
+      border-width: 2px !important;
+      border-color: #00000088;
+      border-radius: 10px;
+      border-style: solid;
+    }
+  }
+}
 </style>
