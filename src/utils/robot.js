@@ -1,6 +1,11 @@
 import * as math from "mathjs"
 import * as transformation from "./transformation"
 
+const robotType = {
+  INDUSTRY: 1,
+  COOPERATION: 2
+}
+
 const getTransformationMatrixMDH = (alpha, a, d, theta, q) => {
   theta += q
   return math.matrix([
@@ -227,4 +232,4 @@ const getJacobian = (dHPara, q) => {
   return math.concat(math.concat(...vArray), math.concat(...wArray), 0)
 }
 
-export {getTransformationMatrixMDH, fKine, iKine8, iKine6s, getJacobian}
+export {robotType, getTransformationMatrixMDH, fKine, iKine8, iKine6s, getJacobian}

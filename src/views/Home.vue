@@ -62,26 +62,6 @@ const store = useStore()
     },
   ])
 
-  // const links = computed(()=> {
-  //   return paras.map(value => {
-  //     return value.value
-  //   });
-  // })
-
-// const links = computed({
-//   set: (values) => {
-//     paras.forEach((value, index, array) => {
-//       array[index] = values[index]
-//     })
-//     console.log(paras)
-//   },
-//   get: () => {
-//     return paras.map(value => {
-//       return value.value
-//     })
-//   }
-// })
-
 const confirm = () => {
   store.commit("confirm", paras)
   console.log(paras)
