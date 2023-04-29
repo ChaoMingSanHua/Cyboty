@@ -63,6 +63,7 @@ import * as math from "mathjs";
 import * as transformation from "@/utils/transformation";
 import * as robot from "@/utils/robot"
 import * as echarts from "echarts"
+import {Plan} from "@/utils/plan";
 
 const jointPosition = ref()
 const descartesPosition = ref()
