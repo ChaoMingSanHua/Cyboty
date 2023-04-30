@@ -81,7 +81,7 @@ class Plan {
           return {
             x: [...p, ...a],
             dx: [...dp, ...da],
-            dda: [...ddp, ...dda]
+            ddx: [...ddp, ...dda]
           }
         }
         break

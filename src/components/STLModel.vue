@@ -183,7 +183,7 @@ onMounted(() => {
   const height = container.value.offsetHeight;
   renderer.setSize(width, height);
   container.value.appendChild(renderer.domElement)
-  console.log(width)
+  // console.log(width)
 })
 
 // const mesh1Axes = new THREE.AxesHelper(1)
