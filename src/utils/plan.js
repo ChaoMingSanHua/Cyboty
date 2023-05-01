@@ -5,13 +5,17 @@ import {AxisAngle} from "./transformation";
 const spaceStateEnum = {
   JOINT: 0,
   DESCARTES: 1,
-  MOTION: 2
 }
 const velStateEnum = {
   CUBIC: 0,
   TCURVE: 1,
   QUINTIC: 2,
   SEVENTH: 3
+}
+
+const jointStateEnum = {
+  LINE: 0,
+  MOTION: 1
 }
 
 const pathStateEnum = {
@@ -32,20 +36,25 @@ class Plan {
    * {x0, x1, tf, vMax, aMax}
    */
   #trajPara
+  #interpolationPara
   #sFunction
-  constructor() {
-    this.#trajPara = null
+  constructor(trajectoryPara) {
+    this.#trajPara = trajectoryPara
+    this.#interpolationPara = null
+    const {x0, x1} = this.#trajPara
+    const p0 = x0.slice(0, 3)
+    const a0 = x0.slice(3, 6)
+    const p1 = x1.slice(0, 3)
+    const a1 = x1.slice(3, 6)
+    this.#trajPara.p0 = p0
+    this.#trajPara.a0 = a0
+    this.#trajPara.p1 = p1
+    this.#trajPara.a1 = a1
 
-    const jointPara = null
-    const pathPara = null
-    const attitudePara = null
-    const velPara = null
-    const spacePara = null
-
-    // this.#pathPlan(pathPara)
-    // this.#attitudePlan(attitudePara)
-    this.#sFunction = this.#spacePlan(spacePara)
-    this.#velPlan(velPara)
+    // 路径规划
+    this.#sFunction = this.#spacePlan()
+    // 速度规划
+    this.#velPlan()
   }
 
   /**
@@ -54,8 +63,12 @@ class Plan {
    * @returns {*}
    */
   getTrajectory = (t) => {
-    const {s, ds, dds} = this.interpolation(t)
+    const {s, ds, dds} = this.#interpolation(t)
     return this.#sFunction(s, ds, dds)
+  }
+
+  get getTf() {
+    return this.#interpolationPara.tf
   }
 
   /**
@@ -63,13 +76,18 @@ class Plan {
    * @param spacePara
    * @returns {null}
    */
-  #spacePlan = (spacePara) => {
-    const {spaceState} = spacePara
+  #spacePlan = () => {
+    const {spaceState} = this.#trajPara
+    let errors = null
     let sFunction = null
     switch (spaceState) {
       case spaceStateEnum.JOINT:
-        const {jointPara} = this.#trajPara
-        sFunction = this.#jointPlan(jointPara)
+        sFunction = this.#jointPlan()
+        const {q0, q1} = this.#trajPara
+        errors = q0.map((value, index) => {
+          return q1[index] - value
+        })
+        this.#trajPara.errors = errors
         break
       case spaceStateEnum.DESCARTES:
         const {pathPara, attitudePara} = this.#trajPara
@@ -84,6 +102,11 @@ class Plan {
             ddx: [...ddp, ...dda]
           }
         }
+        const {x0, x1} = this.#trajPara
+        errors = x0.map((value, index) => {
+          return x1[index] - value
+        })
+        this.#trajPara.errors = errors
         break
       default:
         break
@@ -95,8 +118,8 @@ class Plan {
    * 关节规划
    * @param jointPara
    */
-  #jointPlan = (jointPara) => {
-    const {q0, q1} = jointPara
+  #jointPlan = () => {
+    const {q0, q1} = this.#trajPara
     const sFunction = (s, ds, dds) => {
       const q = q0.map((value, index) => {
         return (q1[index] - value) * s + value
@@ -118,7 +141,7 @@ class Plan {
    * @returns {null}
    */
   #pathPlan = (pathPara) => {
-    const {pathState, p0, p1} = pathPara
+    const {pathState, p0, p1} = this.#trajPara
     let sFunction = null
     switch (pathState) {
       case pathStateEnum.LINE:
@@ -151,7 +174,7 @@ class Plan {
    * @returns {null}
    */
   #attitudePlan = (attitudePara) => {
-    const {attitudeState, a0, a1} = attitudePara
+    const {attitudeState, a0, a1} = this.#trajPara
     let sFunction = null
     switch (attitudeState) {
       case attitudeStateEnum.EULER:
@@ -179,8 +202,8 @@ class Plan {
    * 速度规划
    * @param velPara
    */
-  #velPlan = (velPara) => {
-    const {velState, tf, vMaxes, aMaxes, errors} = velPara
+  #velPlan = () => {
+    const {velState, tf, vMax, aMax, errors} = this.#trajPara
     this.#trajPara.velState = velState
     switch (velState) {
       case velStateEnum.CUBIC:
@@ -188,10 +211,10 @@ class Plan {
         break
       case velStateEnum.TCURVE:
         const vHat = errors.map((value, index) => {
-          return value / vMaxes[index]
+          return math.abs(value / vMax[index])
         })
         const aHat = errors.map((value, index) => {
-          return value / aMaxes[index]
+          return math.abs(value / aMax[index])
         })
         const vHatMax = 1.0 / Math.max(...vHat)
         const aHatMax = 1.0 / Math.max(...aHat)
@@ -238,7 +261,7 @@ class Plan {
       [0]
     ])
     const A = math.multiply(math.inv(Y), P)
-    this.#trajPara = {
+    this.#interpolationPara = {
       para: A,
       tf
     }
@@ -253,7 +276,7 @@ class Plan {
       [1 / (2 * Math.pow(tf, 4)) * (-30)],
       [1 / (2 * Math.pow(tf, 5)) * 12]
     ])
-    this.#trajPara = {
+    this.#interpolationPara = {
       para: A,
       tf
     }
@@ -269,7 +292,7 @@ class Plan {
       tf = 2 * ta
     }
 
-    this.#trajPara = {
+    this.#interpolationPara = {
       ta,
       tf,
       vMax,
@@ -284,23 +307,23 @@ class Plan {
       ds = 0
       dds = math.multiply(math.matrix([
         [0, 0, 2, 0]
-      ]), this.#trajPara.para).get([0, 0])
-    } else if (t >= this.#trajPara.tf) {
+      ]), this.#interpolationPara.para).get([0, 0])
+    } else if (t >= this.#interpolationPara.tf) {
       s = 1
       ds = 0
       dds = math.multiply(math.matrix([
-        [0, 0, 2, 6 * this.#trajPara.tf]
-      ]), this.#trajPara.para).get([0, 0])
+        [0, 0, 2, 6 * this.#interpolationPara.tf]
+      ]), this.#interpolationPara.para).get([0, 0])
     } else {
       s = math.multiply(math.matrix([
         [1, t, math.pow(t, 2), math.pow(t, 3)]
-      ]), this.#trajPara.para).get([0, 0])
+      ]), this.#interpolationPara.para).get([0, 0])
       ds = math.multiply(math.matrix([
         [0, 1, 2 * t, 3 * math.pow(t, 2)]
-      ]), this.#trajPara.para).get([0, 0])
+      ]), this.#interpolationPara.para).get([0, 0])
       dds = math.multiply(math.matrix([
         [0, 0, 2, 6 * t]
-      ]), this.#trajPara.para).get([0, 0])
+      ]), this.#interpolationPara.para).get([0, 0])
     }
     return {s, ds, dds}
   }
@@ -311,18 +334,18 @@ class Plan {
       s = 0
       ds = 0
       dds = 0
-    } else if (t <= this.#trajPara.ta) {
-      s = 0.5 * this.#trajPara.aMax * math.pow(t, 2)
-      ds = this.#trajPara.aMax * t
-      dds = this.#trajPara.aMax
-    } else if (t <= this.#trajPara.tf - this.#trajPara.ta) {
-      s = 0.5 * this.#trajPara.aMax * math.pow(this.#trajPara.ta, 2) + this.#trajPara.aMax * this.#trajPara.ta * (t - this.#trajPara.ta)
-      ds = this.#trajPara.vMax
+    } else if (t <= this.#interpolationPara.ta) {
+      s = 0.5 * this.#interpolationPara.aMax * math.pow(t, 2)
+      ds = this.#interpolationPara.aMax * t
+      dds = this.#interpolationPara.aMax
+    } else if (t <= this.#interpolationPara.tf - this.#interpolationPara.ta) {
+      s = 0.5 * this.#interpolationPara.aMax * math.pow(this.#interpolationPara.ta, 2) + this.#interpolationPara.aMax * this.#interpolationPara.ta * (t - this.#interpolationPara.ta)
+      ds = this.#interpolationPara.vMax
       dds = 0
-    } else if (t <= this.#trajPara.tf) {
-      s = 1 - 0.5 * this.#trajPara.aMax * math.pow(this.#trajPara.tf - t, 2)
-      ds = this.#trajPara.aMax * (this.#trajPara.tf - t)
-      dds = -this.#trajPara.aMax
+    } else if (t <= this.#interpolationPara.tf) {
+      s = 1 - 0.5 * this.#interpolationPara.aMax * math.pow(this.#interpolationPara.tf - t, 2)
+      ds = this.#interpolationPara.aMax * (this.#interpolationPara.tf - t)
+      dds = -this.#interpolationPara.aMax
     } else {
       s = 1
       ds = 0
@@ -337,20 +360,20 @@ class Plan {
       s = 0
       ds = 0
       dds = 0
-    } else if (t >= this.#trajPara.tf) {
+    } else if (t >= this.#interpolationPara.tf) {
       s = 1
       ds = 0
       dds = 0
     } else {
       s = math.multiply(math.matrix([
         [0, t, math.pow(t, 2), math.pow(t, 3), math.pow(t, 4), math.pow(t, 5)]
-      ]), this.#trajPara.para).get([0, 0])
+      ]), this.#interpolationPara.para).get([0, 0])
       ds = math.multiply(math.matrix([
         [0, 1, 2 * t, 3 * math.pow(t, 2), 4 * math.pow(t, 3), 5 * math.pow(t, 4)]
-      ]), this.#trajPara.para).get([0, 0])
+      ]), this.#interpolationPara.para).get([0, 0])
       dds = math.multiply(math.matrix([
         [0, 0, 2, 6 * t, 12 * math.pow(t, 2), 20 * math.pow(t, 3)]
-      ]), this.#trajPara.para).get([0, 0])
+      ]), this.#interpolationPara.para).get([0, 0])
     }
     return {s, ds, dds}
   }
@@ -496,4 +519,4 @@ class Plan {
   }
 }
 
-export {Plan}
+export {spaceStateEnum, velStateEnum, jointStateEnum, pathStateEnum, attitudeStateEnum, Plan}

@@ -7,10 +7,10 @@
         <div class="text-h5">规划空间</div>
       </v-col>
       <v-col class="v-col-12 v-col-md-6">
-        <input type="radio" name="trajSpace" :value="0" v-model="trajSpace"/> 关节空间
+        <input type="radio" name="spaceState" :value="spaceStateEnum.JOINT" v-model="trajectoryPara.spaceState"/> 关节空间
       </v-col>
       <v-col class="v-col-12 v-col-md-6">
-        <input type="radio" name="trajSpace" :value="1" v-model="trajSpace"/> 笛卡尔空间
+        <input type="radio" name="spaceState" :value="spaceStateEnum.DESCARTES" v-model="trajectoryPara.spaceState"/> 笛卡尔空间
       </v-col>
     </v-row>
     <hr />
@@ -20,31 +20,35 @@
         <div class="text-h5">速度规划</div>
       </v-col>
       <v-col class="v-col-12 v-col-md-4">
-        <input type="radio" name="planState" :value="0" v-model="planState"/> 三次多项式
+        <input type="radio" name="velState" :value="velStateEnum.CUBIC" v-model="trajectoryPara.velState"/> 三次多项式
       </v-col>
       <v-col class="v-col-12 v-col-md-4">
-        <input type="radio" name="planState" :value="2" v-model="planState"/> 五次多项式
+        <input type="radio" name="velState" :value="velStateEnum.QUINTIC" v-model="trajectoryPara.velState"/> 五次多项式
       </v-col>
       <v-col class="v-col-12 v-col-md-4">
-        <input type="radio" name="planState" :value="1" v-model="planState"/> 梯型速度
+        <input type="radio" name="velState" :value="velStateEnum.TCURVE" v-model="trajectoryPara.velState"/> 梯型速度
       </v-col>
-      <template class="mx-auto" v-if="[0, 2].indexOf(planState) !== -1">
+      <template class="mx-auto" v-if="[velStateEnum.CUBIC, velStateEnum.QUINTIC].indexOf(trajectoryPara.velState) !== -1">
         <v-col class="v-col-4 mx-auto">
           tf: <input class="ml-4 input-number" type="number" v-model="trajectoryPara.tf"/> (s)
         </v-col>
       </template>
-      <template class="mx-auto" v-else-if="[1].indexOf(planState) !== -1">
+      <template class="mx-auto" v-else-if="[velStateEnum.TCURVE].indexOf(trajectoryPara.velState) !== -1">
         <v-col class="v-col-12">
           <div class="text-h6">最大速度</div>
         </v-col>
         <v-col class="v-col-12 v-col-md-4" v-for="index in 6">
-          {{jointName[index - 1]}}: <input class="ml-4 input-number" type="number" v-model="trajectoryPara.vMax[index - 1]"/> (m/s)
+          <template v-if="spaceStateEnum.JOINT === trajectoryPara.spaceState">{{jointName[index - 1]}}: </template>
+          <template v-else-if="spaceStateEnum.DESCARTES === trajectoryPara.spaceState">{{descartesName[index - 1]}}: </template>
+          <input class="ml-4 input-number" type="number" v-model="trajectoryPara.vMax[index - 1]"/> (m/s)
         </v-col>
         <v-col class="v-col-12">
           <div class="text-h6">最大加速度</div>
         </v-col>
         <v-col class="v-col-12 v-col-md-4" v-for="index in 6">
-          {{jointName[index - 1]}}: <input class="ml-4 input-number" type="number" v-model="trajectoryPara.aMax[index - 1]"/> (m/s^2)
+          <template v-if="spaceStateEnum.JOINT === trajectoryPara.spaceState">{{jointName[index - 1]}}: </template>
+          <template v-else-if="spaceStateEnum.DESCARTES === trajectoryPara.spaceState">{{descartesName[index - 1]}}: </template>
+          <input class="ml-4 input-number" type="number" v-model="trajectoryPara.aMax[index - 1]"/> (m/s^2)
         </v-col>
       </template>
     </v-row>
@@ -54,76 +58,92 @@
         <v-col class="v-col-12">
           <div class="text-h5">路径规划</div>
         </v-col>
-        <template v-if="trajSpace === trajSpaceEnum.JOINT">
-          <v-col class="v-col-12">
-            <div class="text-h6">目标点</div>
+        <template v-if="spaceStateEnum.JOINT === trajectoryPara.spaceState">
+          <v-col class="v-cols-6">
+            <input type="radio" name="jointState" :value="jointStateEnum.LINE" v-model="trajectoryPara.jointState"/> 直线
           </v-col>
-          <v-col class="v-col-4"  v-for="(value, index) of qTarget.list">
-            {{jointName[index]}}: <input class="ml-4 input-number" type="number" v-model="qTarget.list[index]"/>
+          <v-col class="v-cols-6">
+            <input type="radio" name="jointState" :value="jointStateEnum.MOTION" v-model="trajectoryPara.jointState"/> motion
           </v-col>
-        </template>
-        <template v-else-if="trajSpace === trajSpaceEnum.DESCARTES">
-          <v-col class="v-col-3">
-            <input type="radio" name="pathState" :value="0" v-model="pathState" /> 直线
-          </v-col>
-          <v-col class="v-col-3">
-            <input type="radio" name="pathState" :value="1" v-model="pathState" /> 圆弧(中心)
-          </v-col>
-          <v-col class="v-col-3">
-            <input type="radio" name="pathState" :value="2" v-model="pathState" /> 圆弧(途径点)
-          </v-col>
-          <v-col class="v-col-3">
-            <input type="radio" name="pathState" :value="3" v-model="pathState" /> 多点
-          </v-col>
-
-          <!-- 中间点 -->
-          <template v-if="[1, 2].indexOf(pathState) !== -1">
-            <v-col class="v-col-12">
-              <div class="text-h6">中间点</div>
-            </v-col>
-            <v-col class="v-col-4"  v-for="(value, index) of xTarget.list.slice(0, 3)">
-              {{descartesName[index]}}: <input class="ml-4 input-number" type="number" v-model="xTarget.list[index]"/>
-            </v-col>
-          </template>
-          <!-- 目标点 -->
-          <template v-if="[0, 1, 2].indexOf(pathState) !== -1">
+          <template v-if="jointStateEnum.LINE === trajectoryPara.jointState">
             <v-col class="v-col-12">
               <div class="text-h6">目标点</div>
             </v-col>
-            <v-col class="v-col-4" v-for="(value, index) of xTarget.list.slice(0, 3)">
-              {{descartesName[index]}}: <input class="ml-4 input-number" type="number" v-model="xTarget.list[index]"/>
+            <v-col class="v-col-4"  v-for="(value, index) of trajectoryPara.q1">
+              {{jointName[index]}}: <input class="ml-4 input-number" type="number" v-model="trajectoryPara.q1[index]"/>
+            </v-col>
+          </template>
+          <template v-else-if="jointStateEnum.MOTION === trajectoryPara.jointState">
+            <v-col class="v-col-12">
+              <a href="./trajectory.csv" download="trajectory.csv">样本</a>
+            </v-col>
+            <v-col class="v-col-12">
+              <v-file-input label="File input" actions="" ref="fileInput" accept=".csv"></v-file-input>
+            </v-col>
+          </template>
+        </template>
+        <template v-else-if="spaceStateEnum.DESCARTES === trajectoryPara.spaceState">
+          <v-col class="v-col-3">
+            <input type="radio" name="pathState" :value="pathStateEnum.LINE" v-model="trajectoryPara.pathState" /> 直线
+          </v-col>
+          <v-col class="v-col-3">
+            <input type="radio" name="pathState" :value="pathStateEnum.ARC_CENTER" v-model="trajectoryPara.pathState" /> 圆弧(中心)
+          </v-col>
+          <v-col class="v-col-3">
+            <input type="radio" name="pathState" :value="pathStateEnum.ARC_POINT" v-model="trajectoryPara.pathState" /> 圆弧(途径点)
+          </v-col>
+          <v-col class="v-col-3">
+            <input type="radio" name="pathState" :value="pathStateEnum.POINTS" v-model="trajectoryPara.pathState" /> 多点
+          </v-col>
+
+          <!-- 中间点 -->
+          <template v-if="[pathStateEnum.ARC_CENTER, pathStateEnum.ARC_POINT].indexOf(trajectoryPara.pathState) !== -1">
+            <v-col class="v-col-12">
+              <div class="text-h6">中间点</div>
+            </v-col>
+            <v-col class="v-col-4"  v-for="(value, index) of trajectoryPara.x1.slice(0, 3)">
+              {{descartesName[index]}}: <input class="ml-4 input-number" type="number" v-model="trajectoryPara.x1[index]"/>
+            </v-col>
+          </template>
+          <!-- 目标点 -->
+          <template v-if="[pathStateEnum.LINE, pathStateEnum.ARC_CENTER, pathStateEnum.ARC_POINT].indexOf(trajectoryPara.pathState) !== -1">
+            <v-col class="v-col-12">
+              <div class="text-h6">目标点</div>
+            </v-col>
+            <v-col class="v-col-4" v-for="(value, index) of trajectoryPara.x1.slice(0, 3)">
+              {{descartesName[index]}}: <input class="ml-4 input-number" type="number" v-model="trajectoryPara.x1[index]"/>
             </v-col>
           </template>
         </template>
       </v-row>
     <hr />
     <!-- 姿态规划 -->
-    <template v-if="trajSpace === trajSpaceEnum.DESCARTES">
+    <template v-if="spaceStateEnum.DESCARTES === trajectoryPara.spaceState">
       <v-row class="my-4 text-center">
         <v-col class="v-col-12">
           <div class="text-h5">姿态规划</div>
         </v-col>
         <v-col class="v-col-4">
-          <input class="" type="radio" name="attitudeState" :value="0" v-model="attitudeState" /> 欧拉角
+          <input class="" type="radio" name="attitudeState" :value="0" v-model="trajectoryPara.attitudeState" /> 欧拉角
         </v-col>
         <v-col class="v-col-4">
-          <input class="" type="radio" name="attitudeState" :value="1" v-model="attitudeState" /> 四元数
+          <input class="" type="radio" name="attitudeState" :value="1" v-model="trajectoryPara.attitudeState" /> 四元数
         </v-col>
         <v-col class="v-col-4">
-          <input class="" type="radio" name="attitudeState" :value="2" v-model="attitudeState" /> 轴角
+          <input class="" type="radio" name="attitudeState" :value="2" v-model="trajectoryPara.attitudeState" /> 轴角
         </v-col>
 
-        <v-col class="v-col-4" v-for="(value, index) of xTarget.list.slice(3, 6)">
-          {{descartesName[index + 3]}}: <input class="ml-4 input-number" type="number" v-model="xTarget.list[index + 3]"/>
+        <v-col class="v-col-4" v-for="(value, index) of trajectoryPara.x1.slice(3, 6)">
+          {{descartesName[index + 3]}}: <input class="ml-4 input-number" type="number" v-model="trajectoryPara.x1[index + 3]"/>
         </v-col>
       </v-row>
       <hr />
     </template>
 
-    <v-btn @click="trajPlanning" class="mx-auto my-4 d-block text-h7 font-weight-black">规划</v-btn>
-
+    <v-btn @click="trajectoryPlan" class="mx-auto my-4 d-block text-h7 font-weight-black">规划</v-btn>
     <hr />
 
+    <!-- 绘图 -->
     <v-row class="my-4 text-center">
       <v-col class="v-col-12 v-col-md-6">
         <div class="text-h5 font-weight-medium">关节空间</div>
@@ -148,7 +168,7 @@ import * as math from "mathjs";
 import * as transformation from "@/utils/transformation";
 import * as robot from "@/utils/robot"
 import * as echarts from "echarts"
-import {Plan} from "@/utils/plan";
+import {spaceStateEnum, velStateEnum, jointStateEnum, pathStateEnum, attitudeStateEnum, Plan} from "@/utils/plan";
 
 const jointPosition = ref()
 const descartesPosition = ref()
@@ -167,22 +187,6 @@ let descartesVelocityChart = null
 let jointAccelerationChart = null
 let descartesAccelerationChart = null
 
-const trajectoryPara = reactive({
-  tf: 0,
-  vMax: [1, 1, 1, 1, 1, 1],
-  aMax: [1, 1, 1, 1, 1, 1]
-})
-
-const trajSpace = ref(0)
-const planState = ref(0)
-const pathState = ref(0)
-const attitudeState = ref(0)
-const qStart = reactive({
-  list: [0, 0, 0, 0, 0, 0]
-})
-const qTarget = reactive({
-  list: [0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
-})
 const qNowArray = reactive([])
 const dqNow = reactive({
   list: [0, 0, 0, 0, 0, 0]
@@ -190,202 +194,101 @@ const dqNow = reactive({
 const dqNowArray = reactive([])
 const ddqNowArray = []
 
-const xStart = reactive({
-  list: [0, 0, 0, 0, 0, 0]
-})
-const xTarget = reactive({
-  list: [0, 0.0, 0.0, 0.0, 0.0, 0.0]
-})
 const xNowArray = reactive([])
 const dxNow = reactive({
   list: [0, 0, 0, 0, 0, 0]
 })
 const dxNowArray = reactive([])
+const ddxNowArray = []
 
 const store = useStore()
-
-const trajSpaceEnum = {
-  JOINT: 0,
-  DESCARTES: 1
-}
-const planStateEnum = {
-  CUBIC: 0,
-  TCURVE: 1
-}
+const trajectoryPara = reactive({
+  tf: 1,
+  vMax: [1, 1, 1, 1, 1, 1],
+  aMax: [1, 1, 1, 1, 1, 1],
+  spaceState: spaceStateEnum.JOINT,
+  velState: velStateEnum.CUBIC,
+  jointState: jointStateEnum.LINE,
+  pathState: pathStateEnum.LINE,
+  attitudeState: attitudeStateEnum.EULER,
+  q0: [0, 0, 0, 0, 0, 0],
+  q1: [0, 0, 0, 0, 0, 0],
+  x0: [0, 0, 0, 0, 0, 0],
+  x1: [0, 0, 0, 0, 0, 0],
+})
 
 const jointName = reactive([
-  'joint1', 'joint2', 'joint3', 'joint4', 'joint5', 'joint6'
+  'Joint1', 'Joint2', 'Joint3', 'Joint4', 'Joint5', 'Joint6'
 ])
 const descartesName = reactive([
-  'px', 'py', 'pz', 'roll', 'pitch', 'yaw'
+  'Px', 'Py', 'Pz', 'Roll', 'Pitch', 'Yaw'
 ])
 
-watch(trajSpace, ((newValue, oldValue) => {
-  if (newValue === trajSpaceEnum.JOINT) {
-    qTarget.list.forEach((value, index, array) => {
+watch(() => trajectoryPara.spaceState, ((newValue, oldValue) => {
+  if (spaceStateEnum.JOINT === newValue) {
+    trajectoryPara.q1.forEach((value, index, array) => {
       array[index] = store.state.Q[index]
     })
-  } else if (newValue === trajSpaceEnum.DESCARTES) {
-    xTarget.list.forEach((value, index, array) => {
+  } else if (spaceStateEnum.DESCARTES === newValue) {
+    trajectoryPara.x1.forEach((value, index, array) => {
       array[index] = store.getters.X[index]
     })
   }
 }))
 
-const trajCubic = (tf) => {
-  const Y = math.matrix([
-    [1, 0, 0, 0],
-    [1, tf, Math.pow(tf, 2), Math.pow(tf, 3)],
-    [0, 1, 0, 0],
-    [0, 1, 2 * tf, 3 * Math.pow(tf, 2)]
-  ])
-  const P = math.matrix([
-    [0],
-    [1],
-    [0],
-    [0]
-  ])
-  const A = math.multiply(math.inv(Y), P)
-  return {
-    para: A,
-    tf: tf
-  }
-}
-
-const trajTCurve = (vmax, amax) => {
-  let ta = vmax / amax;
-  const pa = 0.5 * amax * math.pow(ta, 2)
-  const tm = (1 - 2 * pa) / vmax
-  let tf = tm + 2 * ta;
-
-  if (tf - 2 * ta < 0) {
-    ta = math.sqrt(1 / amax)
-    tf = 2 * ta
-  }
-
-  return {
-    ta,
-    tf,
-    vmax,
-    amax
-  }
-}
-
-const interpolation = (trajPara, t) => {
-  let s, ds, dds;
-  switch (planState.value) {
-    case planStateEnum.CUBIC:
-      if (t <= 0) {
-        s = 0
-        ds = 0
-        dds = math.multiply(math.matrix([
-          [0, 0, 2, 0]
-        ]), trajPara.para).get([0, 0])
-      } else if (t >= trajPara.tf) {
-        s = 1
-        ds = 0
-        dds = math.multiply(math.matrix([
-          [0, 0, 2, 6 * trajPara.tf]
-        ]), trajPara.para).get([0, 0])
-      } else {
-        s = math.multiply(math.matrix([
-          [1, t, math.pow(t, 2), math.pow(t, 3)]
-        ]), trajPara.para).get([0, 0])
-        ds = math.multiply(math.matrix([
-          [0, 1, 2 * t, 3 * math.pow(t, 2)]
-        ]), trajPara.para).get([0, 0])
-        dds = math.multiply(math.matrix([
-          [0, 0, 2, 6 * t]
-        ]), trajPara.para).get([0, 0])
-      }
-      break;
-    case planStateEnum.TCURVE:
-      if (t <= 0) {
-        s = 0
-        ds = 0
-        dds = 0
-      } else if (t <= trajPara.ta) {
-        s = 0.5 * trajPara.amax * math.pow(t, 2)
-        ds = trajPara.amax * t
-        dds = trajPara.amax
-      } else if (t <= trajPara.tf - trajPara.ta) {
-        s = 0.5 * trajPara.amax * math.pow(trajPara.ta, 2) + trajPara.amax * trajPara.ta * (t - trajPara.ta)
-        ds = trajPara.vmax
-        dds = 0
-      } else if (t <= trajPara.tf) {
-        s = 1 - 0.5 * trajPara.amax * math.pow(trajPara.tf - t, 2)
-        ds = trajPara.amax * (trajPara.tf - t)
-        dds = -trajPara.amax
-      } else {
-        s = 1
-        ds = 0
-        dds = 0
-      }
-      break
-    default:
-      break;
-  }
-
-  return [s, ds, dds]
-}
-
+let dt = 0.1
 let timer = null;
-const trajPlanning = async () => {
-  const tf = trajectoryPara.tf
-  let trajPara;
-  switch (planState.value) {
-    case planStateEnum.CUBIC:
-      trajPara = trajCubic(tf)
-      break
-    case planStateEnum.TCURVE:
-      trajPara = trajTCurve(0.4, 0.1)
-      break
-    default:
-      return
+const trajectoryPlan = async () => {
+  console.log('state.Q')
+  console.log(store.state.Q)
+  if (timeArray.length) {
+    timeArray.pop()
+    qNowArray.pop()
+    xNowArray.pop()
+    dqNowArray.pop()
+    dxNowArray.pop()
+    ddqNowArray.pop()
+    ddxNowArray.pop()
   }
+  const plan = new Plan(trajectoryPara)
 
   if (timer) {
     clearInterval(timer)
   }
 
-  let t = 0;
-  const dt = 0.1
-
-  // TODO
-  const plan = () => new Promise(resolve => {
+  let t = 0
+  const planning = () => new Promise(resolve => {
     timer = setInterval(() => {
-      if (t > trajPara.tf) {
+      if ((t > plan.getTf) || (Math.abs(t - plan.getTf) < 1e-6)) {
         clearInterval(timer)
-        resolve()
+        setTimeout(() => {
+          timeStart.value += t - dt
+          resolve()
+        }, dt * 1000)
       }
-      const [s, ds, dds] = interpolation(trajPara, t)
-
-      let T, J;
+      let T, J
       let xNow = [0, 0, 0, 0, 0, 0]
-      let ddqNow = []
-      // TODO: 不需要做成响应式
-      switch (trajSpace.value) {
-        case trajSpaceEnum.JOINT:
+      const ddqNow = []
+      switch (trajectoryPara.spaceState) {
+        case spaceStateEnum.JOINT:
+          const {q, dq, ddq} = plan.getTrajectory(t)
+          store.commit('setQ', q)
           for (let i = 0; i < 6; i++) {
-            store.state.Q[i] = (qTarget.list[i] - qStart.list[i]) * s + qStart.list[i]
-            dqNow.list[i] = (qTarget.list[i] - qStart.list[i]) * ds
-            ddqNow.push((qTarget.list[i] - qStart.list[i]) * dds)
+            dqNow.list[i] = dq[i]
+            ddqNow.push(ddq[i])
           }
-          const xyzrpy = transformation.Tr2xyzrpy(store.getters.T)
-          xStart.list.forEach((value, index, array) => {
-            array[index] = xyzrpy[index]
-          })
           J = robot.getJacobian(store.getters.dhPara, store.state.Q)
           dxNow.list = math.multiply(J, math.transpose(math.matrix(dqNow.list))).valueOf()
-
           break
-        case trajSpaceEnum.DESCARTES:
+        case spaceStateEnum.DESCARTES:
+          const {x, dx, ddx} = plan.getTrajectory(t)
           for (let i = 0; i < 6; i++) {
-            xNow[i] = (xTarget.list[i] - xStart.list[i]) * s + xStart.list[i]
-            dxNow.list[i] = (xTarget.list[i] - xStart.list[i]) * v
+            xNow[i] = x[i]
+            dxNow.list[i] = dx[i]
           }
-          T = transformation.xyzrpy2Tr(xNow);
-          store.state.Q = robot.iKine6s(store.getters.dhPara, T, qStart.list)
+          T = transformation.xyzrpy2Tr(xNow)
+          const qe = robot.iKine6s(store.getters.dhPara, T, trajectoryPara.q0)
+          store.commit('setQ', qe)
           J = robot.getJacobian(store.getters.dhPara, store.state.Q)
           dqNow.list = math.multiply(math.inv(J), math.transpose(math.matrix(dxNow.list))).valueOf()
           break
@@ -393,24 +296,26 @@ const trajPlanning = async () => {
           break
       }
 
+      timeArray.push((timeStart.value + t).toFixed(2))
       qNowArray.push([...store.state.Q])
       xNowArray.push([...store.getters.X])
       dqNowArray.push([...dqNow.list])
       dxNowArray.push([...dxNow.list])
-      ddqNowArray.push([...ddqNow])
       t += dt
     }, dt * 1000)
   })
 
-  await plan()
-  qStart.list.forEach((value, index, array) => {
+  await planning()
+  trajectoryPara.q0.forEach((value, index, array) => {
     array[index] = store.state.Q[index]
+  })
+  trajectoryPara.x0.forEach((value, index, array) => {
+    array[index] = store.getters.X[index]
   })
   renderJointPosition()
   renderDescartesPosition()
   renderJointVelocity()
   renderDescartesVelocity()
-  renderJointAcceleration()
 }
 
 const initChart = () => {
@@ -499,6 +404,9 @@ const renderJointPosition = () => {
   }
 
   const option = {
+    xAxis: {
+      data: timeArray
+    },
     series
   }
 
@@ -518,9 +426,33 @@ const renderJointVelocity = () => {
   }
 
   const option = {
+    xAxis: {
+      data: timeArray
+    },
     series
   }
   option && jointVelocityChart.setOption(option)
+}
+
+const renderJointAcceleration = () => {
+  const series = []
+  for (let i = 0; i < 6; i++) {
+    series.push({
+      data: ddqNowArray.map(value => {
+        return value[i]
+      }),
+      type: 'line',
+      name: jointName[i]
+    })
+  }
+
+  const option = {
+    xAxis: {
+      data: timeArray
+    },
+    series
+  }
+  option && jointAccelerationChart.setOption(option)
 }
 
 const renderDescartesPosition = () => {
@@ -536,6 +468,9 @@ const renderDescartesPosition = () => {
   }
 
   const option = {
+    xAxis: {
+      data: timeArray
+    },
     series
   }
   option && descartesPositionChart.setOption(option)
@@ -554,27 +489,33 @@ const renderDescartesVelocity = () => {
   }
 
   const option = {
+    xAxis: {
+      data: timeArray
+    },
     series
   }
   option && descartesVelocityChart.setOption(option)
 }
 
-const renderJointAcceleration = () => {
+const renderDescartesAcceleration = () => {
   const series = []
   for (let i = 0; i < 6; i++) {
     series.push({
-      data: ddqNowArray.map(value => {
+      data: ddxNowArray.map(value => {
         return value[i]
       }),
       type: 'line',
-      name: jointName[i]
+      name: descartesName[i]
     })
   }
 
   const option = {
+    xAxis: {
+      data: timeArray
+    },
     series
   }
-  option && jointAccelerationChart.setOption(option)
+  option && descartesAccelerationChart.setOption(option)
 }
 
 </script>

@@ -1,0 +1,5 @@
+# Vuex.Store中mutations和actions的区别
+
+mutations和actions都是Vuex.Store里定义函数的方法
+mutations定于的函数的参数都有一个state,表示store里的整个state数据,同步加载
+actions定义的函数里的参数是content，代表整个store对象，用于异步加载

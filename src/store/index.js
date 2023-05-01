@@ -78,6 +78,11 @@ export default createStore({
       state.A[3] = paras[4].value
       state.D[3] = paras[5].value
       state.D[5] = paras[6].value
+    },
+    setQ(state, qs) {
+      qs.forEach((value, index) => {
+        state.Q[index] = value
+      })
     }
   },
   actions: {
@@ -85,8 +90,8 @@ export default createStore({
   modules: {
   },
   plugins: [
-    createPersistedState({
-      storage: window.sessionStorage
-    })
+    // createPersistedState({
+    //   storage: window.sessionStorage
+    // })
   ]
 })
