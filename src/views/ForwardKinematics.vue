@@ -63,14 +63,8 @@
 </template>
 
 <script setup>
-import {defineAsyncComponent} from "vue";
 import {useStore} from "vuex";
-// import InverseKinematics from "@/views/InverseKinematics"
-// import TrajectoryPlanning from "@/views/TrajectoryPlanning"
-
-// const STLModel = defineAsyncComponent(() => import('@/components/STLModel'))
 const store = useStore()
-// console.log(store.state.Q)
 
 </script>
 

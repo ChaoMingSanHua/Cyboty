@@ -25,14 +25,13 @@
 <script setup>
 import {computed, defineAsyncComponent} from "vue";
 import {useStore} from "vuex";
-import * as math from "mathjs"
-import * as robot from "@/utils/robot"
+import {robot} from "@/utils/robot";
 
 const STLModel = defineAsyncComponent(() => import('@/components/STLModel'))
 const store = useStore()
 
 const Qs = computed(() => {
-  return robot.iKine8(store.getters.dhPara, store.getters.T)
+  return robot.iKineAll(store.getters.T)
 })
 </script>
 

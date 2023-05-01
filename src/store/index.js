@@ -2,7 +2,7 @@ import {createStore} from "vuex";
 import createPersistedState from "vuex-persistedstate"
 import * as math from "mathjs"
 import * as transformation from "@/utils/transformation";
-import * as robot from "@/utils/robot"
+import {robot} from "@/utils/robot";
 
 export default createStore({
   state: {
@@ -29,23 +29,7 @@ export default createStore({
       }
     },
     T: (state, getters) => {
-      // const getTransformationMatrixMDH = (alpha, a, d, theta, q) => {
-      //   theta += q
-      //   return math.matrix([
-      //     [Math.cos(theta), -Math.sin(theta), 0, a],
-      //     [Math.sin(theta) * Math.cos(alpha), Math.cos(theta) * Math.cos(alpha), -Math.sin(alpha), -d * Math.sin(alpha)],
-      //     [Math.sin(theta) * Math.sin(alpha), Math.cos(theta) * Math.sin(alpha), Math.cos(alpha), d * Math.cos(alpha)],
-      //     [0, 0, 0, 1]
-      //   ])
-      // }
-      // const fKine = (Q) => {
-      //   let T = math.identity(4);
-      //   for (let index = 0; index < Q.length; index++) {
-      //     T = math.multiply(T, getTransformationMatrixMDH(state.Alpha[index], state.A[index], state.D[index], state.Theta[index], Q[index]))
-      //   }
-      //   return T
-      // }
-      return robot.fKine(getters.dhPara, state.Q)
+      return robot.fKine(state.Q)
     },
     px: ((state, getters) => {
       return getters.T.get([0, 3])

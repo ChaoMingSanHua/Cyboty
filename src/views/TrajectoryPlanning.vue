@@ -166,7 +166,7 @@ import {computed, onMounted, reactive, ref, watch} from "vue";
 import {useStore} from "vuex";
 import * as math from "mathjs";
 import * as transformation from "@/utils/transformation";
-import * as robot from "@/utils/robot"
+import {robot} from "@/utils/robot"
 import * as echarts from "echarts"
 import {spaceStateEnum, velStateEnum, jointStateEnum, pathStateEnum, attitudeStateEnum, Plan} from "@/utils/plan";
 
@@ -277,7 +277,7 @@ const trajectoryPlan = async () => {
             dqNow.list[i] = dq[i]
             ddqNow.push(ddq[i])
           }
-          J = robot.getJacobian(store.getters.dhPara, store.state.Q)
+          J = robot.getJacobian(store.state.Q)
           dxNow.list = math.multiply(J, math.transpose(math.matrix(dqNow.list))).valueOf()
           break
         case spaceStateEnum.DESCARTES:
@@ -287,9 +287,9 @@ const trajectoryPlan = async () => {
             dxNow.list[i] = dx[i]
           }
           T = transformation.xyzrpy2Tr(xNow)
-          const qe = robot.iKine6s(store.getters.dhPara, T, trajectoryPara.q0)
+          const qe = robot.iKine6s(T, trajectoryPara.q0)
           store.commit('setQ', qe)
-          J = robot.getJacobian(store.getters.dhPara, store.state.Q)
+          J = robot.getJacobian(store.state.Q)
           dqNow.list = math.multiply(math.inv(J), math.transpose(math.matrix(dxNow.list))).valueOf()
           break
         default:

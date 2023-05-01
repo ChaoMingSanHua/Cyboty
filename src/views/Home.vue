@@ -16,7 +16,7 @@
           </thead>
           <tbody>
           <tr v-for="(item, index) of paras">
-            <td class="text-center">{{item.name}}</td>
+            <td class="text-center">{{ item.name }}</td>
             <td class="text-center">
               <input type="number" class="text-center w-75" v-model="paras[index].value"/>
             </td>
@@ -41,7 +41,7 @@
           </thead>
           <tbody>
           <tr v-for="(item, index) of paras">
-            <td class="text-center">{{item.name}}</td>
+            <td class="text-center">{{ item.name }}</td>
             <td class="text-center">
               <input type="number" class="text-center w-75" v-model="paras[index].value"/>
             </td>
@@ -99,43 +99,57 @@
 <script setup>
 import {computed, reactive} from "vue";
 import {useStore} from "vuex";
+import {robot} from "@/utils/robot";
 
 const store = useStore()
 
-  const paras = reactive([
-    {
-      name: "l1",
-      value: store.state.D[0],
-    },
-    {
-      name: "l2",
-      value: store.state.A[1],
-    },
-    {
-      name: "l3",
-      value: store.state.A[2],
-    },
-    {
-      name: "l4",
-      value: store.state.D[2],
-    },
-    {
-      name: "l5",
-      value: store.state.A[3],
-    },
-    {
-      name: "l6",
-      value: store.state.D[3],
-    },
-    {
-      name: "l7",
-      value: store.state.D[5],
-    },
-  ])
+const paras = reactive([
+  {
+    name: "l1",
+    value: store.state.D[0],
+  },
+  {
+    name: "l2",
+    value: store.state.A[1],
+  },
+  {
+    name: "l3",
+    value: store.state.A[2],
+  },
+  {
+    name: "l4",
+    value: store.state.D[2],
+  },
+  {
+    name: "l5",
+    value: store.state.A[3],
+  },
+  {
+    name: "l6",
+    value: store.state.D[3],
+  },
+  {
+    name: "l7",
+    value: store.state.D[5],
+  },
+])
 
 const confirm = () => {
   store.commit("confirm", paras)
-  console.log(paras)
   // console.log(store.)
+  const robotType = {
+    robotType: 0,
+    linkLengths: [
+      paras[0].value,
+      paras[1].value,
+      paras[2].value,
+      paras[3].value,
+      paras[4].value,
+      paras[5].value,
+      paras[6].value,
+    ]
+  }
+  robot.configRobot(robotType)
+  console.log('机器人已配置')
 }
 </script>
