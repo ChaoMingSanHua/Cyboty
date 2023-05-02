@@ -25,6 +25,7 @@
         </v-table>
       </v-col>
     </v-row>
+    <!--
     <v-row class="my-4">
       <v-col>
         <div class="text-center text-h4 font-weight-bold">关节限位</div>
@@ -92,6 +93,7 @@
         </v-table>
       </v-col>
     </v-row>
+    -->
     <v-btn class="mx-auto d-block" @click="confirm">确认</v-btn>
   </v-card>
 </template>

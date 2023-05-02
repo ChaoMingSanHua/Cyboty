@@ -1,4 +1,5 @@
 <template>
+  <config-dialog />
   <v-card class="model-container">
     <h1 class="text-center">正运动学</h1>
     <div class="input-container mt-4">
@@ -64,6 +65,7 @@
 
 <script setup>
 import {useStore} from "vuex";
+
 const store = useStore()
 
 </script>

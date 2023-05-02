@@ -12,11 +12,6 @@
             {{value}}
           </router-link>
         </div>
-<!--        <div class="menus-item">-->
-<!--          <router-link to="/" class="menu-btn">-->
-<!--            正运动学-->
-<!--          </router-link>-->
-<!--        </div>-->
       </div>
     </div>
   </v-app-bar>
@@ -26,15 +21,15 @@
 import {reactive} from "vue";
 
 const navTitle = reactive([
-  "首页",
+  "参数配置",
   "正运动学",
   "逆运动学",
   "轨迹规划",
-  "打赏"
+  "个人信息"
 ])
 
 const navLink = reactive([
-  "/",
+  "parameter_configuration",
   "forward_kinematics",
   "inverse_kinematics",
   "trajectory_planning",

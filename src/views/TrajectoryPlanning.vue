@@ -1,4 +1,5 @@
 <template>
+  <config-dialog />
   <v-card class="model-container">
     <h1 class="text-center">轨迹规划</h1>
     <!-- 空间规划 -->
@@ -164,11 +165,11 @@
 <script setup>
 import {computed, onMounted, reactive, ref, watch} from "vue";
 import {useStore} from "vuex";
-import * as math from "mathjs";
-import * as transformation from "@/utils/transformation";
 import {robot} from "@/utils/robot"
 import * as echarts from "echarts"
 import {spaceStateEnum, velStateEnum, jointStateEnum, pathStateEnum, attitudeStateEnum, Plan} from "@/utils/plan";
+
+const store = useStore()
 
 const jointPosition = ref()
 const descartesPosition = ref()
@@ -187,21 +188,13 @@ let descartesVelocityChart = null
 let jointAccelerationChart = null
 let descartesAccelerationChart = null
 
-const qNowArray = reactive([])
-const dqNow = reactive({
-  list: [0, 0, 0, 0, 0, 0]
-})
-const dqNowArray = reactive([])
+const qNowArray = []
+const dqNowArray = []
 const ddqNowArray = []
-
-const xNowArray = reactive([])
-const dxNow = reactive({
-  list: [0, 0, 0, 0, 0, 0]
-})
-const dxNowArray = reactive([])
+const xNowArray = []
+const dxNowArray = []
 const ddxNowArray = []
 
-const store = useStore()
 const trajectoryPara = reactive({
   tf: 1,
   vMax: [1, 1, 1, 1, 1, 1],
@@ -266,31 +259,34 @@ const trajectoryPlan = async () => {
           resolve()
         }, dt * 1000)
       }
-      let T, J
-      let xNow = [0, 0, 0, 0, 0, 0]
+
+      const dqNow = []
+      const dxNow = []
       const ddqNow = []
+      const ddxNow = []
       switch (trajectoryPara.spaceState) {
         case spaceStateEnum.JOINT:
           const {q, dq, ddq} = plan.getTrajectory(t)
+          const {dxs, ddxs} = robot.getDescartesViaJoint(q, dq, ddq)
           store.commit('setQ', q)
           for (let i = 0; i < 6; i++) {
-            dqNow.list[i] = dq[i]
+            dqNow.push(dq[i])
             ddqNow.push(ddq[i])
+            dxNow.push(dxs[i])
+            ddxNow.push(ddxs[i])
           }
-          J = robot.getJacobian(store.state.Q)
-          dxNow.list = math.multiply(J, math.transpose(math.matrix(dqNow.list))).valueOf()
+
           break
         case spaceStateEnum.DESCARTES:
           const {x, dx, ddx} = plan.getTrajectory(t)
+          const {qs, dqs, ddqs} = robot.getJointViaDescartes(x, dx, ddx, store.state.Q)
+          store.commit('setQ', qs)
           for (let i = 0; i < 6; i++) {
-            xNow[i] = x[i]
-            dxNow.list[i] = dx[i]
+            dqNow.push(dqs[i])
+            ddqNow.push(ddqs[i])
+            dxNow.push(dx[i])
+            ddxNow.push(ddx[i])
           }
-          T = transformation.xyzrpy2Tr(xNow)
-          const qe = robot.iKine6s(T, trajectoryPara.q0)
-          store.commit('setQ', qe)
-          J = robot.getJacobian(store.state.Q)
-          dqNow.list = math.multiply(math.inv(J), math.transpose(math.matrix(dxNow.list))).valueOf()
           break
         default:
           break
@@ -299,8 +295,10 @@ const trajectoryPlan = async () => {
       timeArray.push((timeStart.value + t).toFixed(2))
       qNowArray.push([...store.state.Q])
       xNowArray.push([...store.getters.X])
-      dqNowArray.push([...dqNow.list])
-      dxNowArray.push([...dxNow.list])
+      dqNowArray.push([...dqNow])
+      dxNowArray.push([...dxNow])
+      ddqNowArray.push([...ddqNow])
+      ddxNowArray.push([...ddxNow])
       t += dt
     }, dt * 1000)
   })
@@ -316,6 +314,8 @@ const trajectoryPlan = async () => {
   renderDescartesPosition()
   renderJointVelocity()
   renderDescartesVelocity()
+  renderJointAcceleration()
+  renderDescartesAcceleration()
 }
 
 const initChart = () => {
@@ -346,7 +346,7 @@ const initChart = () => {
     },
     xAxis: {
       type: 'category',
-      boundaryGap: false
+      boundaryGap: false,
     },
     yAxis: {
       type: 'value',
@@ -521,18 +521,6 @@ const renderDescartesAcceleration = () => {
 </script>
 
 <style lang="scss" scoped>
-//.model-container {
-//  .input-container {
-//    input {
-//      width: 40%;
-//      border-width: 2px !important;
-//      border-color: #00000088;
-//      border-radius: 10px;
-//      border-style: solid;
-//    }
-//  }
-//}
-
 .input-number {
   width: 40%;
   border-width: 2px !important;

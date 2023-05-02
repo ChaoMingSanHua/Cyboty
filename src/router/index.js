@@ -3,6 +3,10 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
   {
+    path: '/',
+    redirect: '/parameter_configuration'
+  },
+  {
     // path: '/',
     // component: () => import('@/layouts/default/Default.vue'),
     // children: [
@@ -12,12 +16,11 @@ const routes = [
     //     // route level code-splitting
     //     // this generates a separate chunk (about.[hash].js) for this route
     //     // which is lazy-loaded when the route is visited.
-    //     component: () => import(/* webpackChunkName: "home" */ '@/views/Home.vue'),
+    //     component: () => import(/* webpackChunkName: "home" */ '@/views/ParameterConfiguration.vue'),
     //   },
     // ],
-
-    path: '/',
-    component: () => import('@/views/Home')
+    path: '/parameter_configuration',
+    component: () => import('@/views/ParameterConfiguration')
   },
   {
     path: '/forward_kinematics',

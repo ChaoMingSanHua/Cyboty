@@ -6,6 +6,8 @@ import {robot} from "@/utils/robot";
 
 export default createStore({
   state: {
+    configComplete: false,
+
     // DH Parameter
     Alpha: [0.0, Math.PI / 2, 0.0, Math.PI / 2, -Math.PI / 2, Math.PI / 2],
     A: [0.0, 0.05, 0.43, 0.05, 0.0, 0.0],
@@ -62,6 +64,8 @@ export default createStore({
       state.A[3] = paras[4].value
       state.D[3] = paras[5].value
       state.D[5] = paras[6].value
+
+      state.configComplete = true
     },
     setQ(state, qs) {
       qs.forEach((value, index) => {
