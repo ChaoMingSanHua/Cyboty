@@ -1,10 +1,10 @@
 <template>
   <v-card class="model-container w-50">
     <div class="my-4 text-center text-h4 font-weight-bold">结构配置</div>
+    <v-divider />
     <v-row class="my-4 text-center">
       <v-col class="v-col-12">
         <div class="my-3 text-center text-h5 font-weight-medium">机型选择</div>
-        <v-divider />
       </v-col>
       <v-col class="v-col-12 v-col-md-6">
         <input type="radio" name="robotType" :value="RobotTypeEnum.INDUSTRY" v-model="robotType"> 工业型
@@ -13,16 +13,20 @@
         <input type="radio" name="robotType" :value="RobotTypeEnum.COOPERATION" v-model="robotType"> 协作型
       </v-col>
     </v-row>
-    <v-row class="my-4">
-      <v-col>
+    <v-divider />
+    <v-row class="my-4 text-center">
+      <v-col class="v-col-12">
+        <div class="my-3 text-center text-h5 font-weight-medium">杆长配置</div>
+      </v-col>
+      <v-col class="v-col-12">
         <v-table>
           <thead>
           <tr>
             <th class="text-center v-col-6">
-              Name
+              名称
             </th>
             <th class="text-center v-col-6">
-              Value
+              杆长
             </th>
           </tr>
           </thead>
@@ -37,6 +41,7 @@
         </v-table>
       </v-col>
     </v-row>
+    <v-divider />
     <confirm-configuration @test="confirm"/>
   </v-card>
 </template>

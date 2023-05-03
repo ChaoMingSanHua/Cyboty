@@ -25,6 +25,7 @@ const navTitle = reactive([
   "DH参数",
   "正运动学",
   "逆运动学",
+  "工作空间",
   "轨迹规划",
   "个人信息"
 ])
@@ -34,6 +35,7 @@ const navLink = reactive([
   "dh_parameter",
   "forward_kinematics",
   "inverse_kinematics",
+  "workspace",
   "trajectory_planning",
   "personal_information"
 ])

@@ -10,7 +10,6 @@ const fixed = (fractionDigits) => {
       }
       el.onblur = (event) => {
         if (binding.value.index !== undefined) {
-          console.log(binding.value.index)
           binding.value.obj[key][binding.value.index] = parseFloat(parseFloat(event.target.value).toFixed(fractionDigits))
           el.value = binding.value.obj[binding.value.key][binding.value.index].toFixed(fractionDigits)
           return

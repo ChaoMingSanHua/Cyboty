@@ -1,6 +1,7 @@
 <template>
   <div class="text-center">
     <v-btn
+      class="my-4"
       :disabled="dialog"
       :loading="dialog"
       color="white"

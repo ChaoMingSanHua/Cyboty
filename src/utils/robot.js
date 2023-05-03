@@ -80,7 +80,6 @@ class Robot {
 
   configRobot = (robotPara) => {
     this.robotType = robotPara.robotType
-    console.log(robotPara.robotType)
     const {linkLengths} = robotPara
     switch (this.robotType) {
       case RobotTypeEnum.INDUSTRY:
@@ -751,6 +750,25 @@ class Robot {
       dqs,
       ddqs
     }
+  }
+
+  getWorkspace = (qLimit) => {
+    const count = 10000
+    const q = []
+    const pxArray = []
+    const pyArray = []
+    const pzArray = []
+    for (let i = 0; i < count; i++) {
+      q.length = 0
+      for (let j = 0; j < robot.#dof; j++) {
+        q.push(math.random() * (qLimit.upper[j] - qLimit.lower[j]) + qLimit.lower[j])
+      }
+      const T = this.fKine(q)
+      pxArray.push(T.get([0, 3]))
+      pyArray.push(T.get([1, 3]))
+      pzArray.push(T.get([2, 3]))
+    }
+    return {pxArray, pyArray, pzArray}
   }
 
   // TODO: will delete

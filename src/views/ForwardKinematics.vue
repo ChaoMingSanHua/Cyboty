@@ -5,7 +5,6 @@
     <div class="input-container mt-4">
       <div v-for="(value, index) of store.state.Q">
         关节{{ index + 1 }}:
-<!--        <input type="number" class="ml-4" v-model="store.state.Q[index]">-->
         <input type="number" class="ml-4" v-fixed="{obj:store.state.Q, key: index}">
         rad
       </div>

@@ -67,7 +67,7 @@ const friendAvatars = Object.keys(friendModules)
 const friendLinkList = reactive([])
 
 const friendNames = ["星夜未央", "zero的光剑", "兔角", "终极"]
-const friendIntros = ["慎独", "赤色战神", "这个世界充满了宽恕", "快乐要有悲伤作陪,雨过应该就有天晴"]
+const friendIntros = ["慎独", "吾身已成铁，吾心乃空灵", "世界充满了宽恕", "快乐要有悲伤作陪，雨过应该就有天晴"]
 
 friendNames.forEach((value, index) => {
   friendLinkList.push({

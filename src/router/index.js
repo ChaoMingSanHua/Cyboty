@@ -35,6 +35,10 @@ const routes = [
     component: () => import('@/views/InverseKinematics')
   },
   {
+    path: '/workspace',
+    component: () => import('@/views/WorkSpace')
+  },
+  {
     path: '/trajectory_planning',
     component: () => import('@/views/TrajectoryPlanning')
   },
