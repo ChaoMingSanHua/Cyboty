@@ -1,12 +1,12 @@
 <template>
-  <config-dialog />
+  <back-configuration />
   <v-card class="model-container">
-    <h1 class="text-center">正运动学</h1>
+    <div class="text-center text-h4 font-weight-bold">正运动学</div>
     <div class="input-container mt-4">
       <div v-for="(value, index) of store.state.Q">
-        <!--        <p>关节1</p>-->
         关节{{ index + 1 }}:
-        <input type="number" class="ml-4" v-model="store.state.Q[index]">
+<!--        <input type="number" class="ml-4" v-model="store.state.Q[index]">-->
+        <input type="number" class="ml-4" v-fixed="{obj:store.state.Q, key: index}">
         rad
       </div>
     </div>

@@ -35,12 +35,52 @@ class Robot {
   #Sigmas
   #jConfig
   constructor() {
-    // const linkLengths = [0.376, 0.05, 0.43, 0.0, 0.05, 0.4275, 0.089] // industry
-    // this.robotType = RobotTypeEnum.INDUSTRY
+    this.#jConfig = {
+      overhead: OverheadEnum.FRONT,
+      inline: InlineEnum.UP,
+      wrist: WristEnum.FLIP
+    }
+  }
+
+  get getDof() {
+    return this.#dof
+  }
+
+  get getMDHParameter() {
+    return {
+      Alphas: this.#Alphas,
+      As: this.#As,
+      Ds: this.#Ds,
+      Thetas: this.#Thetas,
+      Sigmas: this.#Sigmas
+    }
+  }
+
+  get getSDHParameter() {
+    const Alphas = []
+    const As = []
+
+    for (let i = 0; i < this.#dof; i++) {
+      if (i > 0) {
+        Alphas.push(this.#Alphas[i])
+        As.push(this.#As[i])
+      }
+    }
+    Alphas.push(0)
+    As.push(0)
+
+    return {
+      Thetas: this.#Thetas,
+      Ds: this.#Ds,
+      As,
+      Alphas,
+      Sigmas: this.#Sigmas
+    }
   }
 
   configRobot = (robotPara) => {
     this.robotType = robotPara.robotType
+    console.log(robotPara.robotType)
     const {linkLengths} = robotPara
     switch (this.robotType) {
       case RobotTypeEnum.INDUSTRY:
@@ -572,7 +612,7 @@ class Robot {
       [array[index]] = Robot.wrap(value)
     })
 
-    const multiTurn = false
+    const multiTurn = true
 
     if (!multiTurn) {
       return q
@@ -701,7 +741,8 @@ class Robot {
 
   getJointViaDescartes = (xs, dxs, ddxs, q0) => {
     const T = transformation.xyzrpy2Tr(xs)
-    const qs = this.iKine6s(T, q0)
+    // const qs = this.iKine6s(T, q0)
+    const qs = this.iKineJConfig(T, q0)
     const J = this.getJacobian(qs)
     const dqs = math.multiply(math.inv(J), dxs).valueOf()
     const ddqs = math.multiply(math.inv(J), math.subtract(ddxs, math.multiply(J, dqs))).valueOf()
@@ -783,4 +824,4 @@ const getTransformationMatrixMDH = (alpha, a, d, theta, sigma, q) => {
 }
 
 const robot = new Robot()
-export {robot}
+export {RobotTypeEnum, JointTypeEnum, robot}

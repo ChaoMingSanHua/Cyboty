@@ -22,6 +22,7 @@ import {reactive} from "vue";
 
 const navTitle = reactive([
   "参数配置",
+  "DH参数",
   "正运动学",
   "逆运动学",
   "轨迹规划",
@@ -30,6 +31,7 @@ const navTitle = reactive([
 
 const navLink = reactive([
   "parameter_configuration",
+  "dh_parameter",
   "forward_kinematics",
   "inverse_kinematics",
   "trajectory_planning",

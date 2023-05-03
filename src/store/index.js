@@ -31,7 +31,7 @@ export default createStore({
       }
     },
     T: (state, getters) => {
-      return robot.fKine(state.Q)
+      return robot.fKine([...state.Q])
     },
     px: ((state, getters) => {
       return getters.T.get([0, 3])

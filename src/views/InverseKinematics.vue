@@ -1,5 +1,5 @@
 <template>
-  <config-dialog />
+  <back-configuration />
   <template v-if="store.state.configComplete">
     <v-card class="model-container">
       <div class="ikine">

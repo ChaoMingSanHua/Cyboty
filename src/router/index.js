@@ -23,6 +23,10 @@ const routes = [
     component: () => import('@/views/ParameterConfiguration')
   },
   {
+    path: '/dh_parameter',
+    component: () => import('@/views/DHParameter')
+  },
+  {
     path: '/forward_kinematics',
     component: () => import('@/views/ForwardKinematics')
   },

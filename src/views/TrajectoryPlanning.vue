@@ -1,7 +1,7 @@
 <template>
-  <config-dialog />
+  <back-configuration />
   <v-card class="model-container">
-    <h1 class="text-center">轨迹规划</h1>
+    <div class="text-center text-h4 font-weight-bold">轨迹规划</div>
     <!-- 空间规划 -->
     <v-row class="my-4 text-center">
       <v-col cols="12">
@@ -31,7 +31,7 @@
       </v-col>
       <template class="mx-auto" v-if="[velStateEnum.CUBIC, velStateEnum.QUINTIC].indexOf(trajectoryPara.velState) !== -1">
         <v-col class="v-col-4 mx-auto">
-          tf: <input class="ml-4 input-number" type="number" v-model="trajectoryPara.tf"/> (s)
+          tf: <input class="ml-4 input-number" type="number" v-fixed="{obj:trajectoryPara, key: 'tf'}"/> (s)
         </v-col>
       </template>
       <template class="mx-auto" v-else-if="[velStateEnum.TCURVE].indexOf(trajectoryPara.velState) !== -1">
@@ -41,7 +41,7 @@
         <v-col class="v-col-12 v-col-md-4" v-for="index in 6">
           <template v-if="spaceStateEnum.JOINT === trajectoryPara.spaceState">{{jointName[index - 1]}}: </template>
           <template v-else-if="spaceStateEnum.DESCARTES === trajectoryPara.spaceState">{{descartesName[index - 1]}}: </template>
-          <input class="ml-4 input-number" type="number" v-model="trajectoryPara.vMax[index - 1]"/> (m/s)
+          <input class="ml-4 input-number" type="number" v-fixed="{obj: trajectoryPara, key: 'vMax', index: index-1}" /> (m/s)
         </v-col>
         <v-col class="v-col-12">
           <div class="text-h6">最大加速度</div>
@@ -49,7 +49,7 @@
         <v-col class="v-col-12 v-col-md-4" v-for="index in 6">
           <template v-if="spaceStateEnum.JOINT === trajectoryPara.spaceState">{{jointName[index - 1]}}: </template>
           <template v-else-if="spaceStateEnum.DESCARTES === trajectoryPara.spaceState">{{descartesName[index - 1]}}: </template>
-          <input class="ml-4 input-number" type="number" v-model="trajectoryPara.aMax[index - 1]"/> (m/s^2)
+          <input class="ml-4 input-number" type="number" v-fixed="{obj: trajectoryPara, key: 'aMax', index: index-1}"/> (m/s^2)
         </v-col>
       </template>
     </v-row>
@@ -70,8 +70,8 @@
             <v-col class="v-col-12">
               <div class="text-h6">目标点</div>
             </v-col>
-            <v-col class="v-col-4"  v-for="(value, index) of trajectoryPara.q1">
-              {{jointName[index]}}: <input class="ml-4 input-number" type="number" v-model="trajectoryPara.q1[index]"/>
+            <v-col class="v-col-4"  v-for="(value, index) in trajectoryPara.q1">
+              {{jointName[index]}}: <input class="ml-4 input-number" type="number" v-fixed="{obj: trajectoryPara, key: 'q1', index: index}"/>
             </v-col>
           </template>
           <template v-else-if="jointStateEnum.MOTION === trajectoryPara.jointState">
@@ -103,7 +103,7 @@
               <div class="text-h6">中间点</div>
             </v-col>
             <v-col class="v-col-4"  v-for="(value, index) of trajectoryPara.x1.slice(0, 3)">
-              {{descartesName[index]}}: <input class="ml-4 input-number" type="number" v-model="trajectoryPara.x1[index]"/>
+              {{descartesName[index]}}: <input class="ml-4 input-number" type="number" v-fixed="{obj: trajectoryPara, key: 'x1', index: index}"/>
             </v-col>
           </template>
           <!-- 目标点 -->
@@ -112,7 +112,7 @@
               <div class="text-h6">目标点</div>
             </v-col>
             <v-col class="v-col-4" v-for="(value, index) of trajectoryPara.x1.slice(0, 3)">
-              {{descartesName[index]}}: <input class="ml-4 input-number" type="number" v-model="trajectoryPara.x1[index]"/>
+              {{descartesName[index]}}: <input class="ml-4 input-number" type="number" v-fixed="{obj: trajectoryPara, key: 'x1', index: index}"/>
             </v-col>
           </template>
         </template>
@@ -135,15 +135,13 @@
         </v-col>
 
         <v-col class="v-col-4" v-for="(value, index) of trajectoryPara.x1.slice(3, 6)">
-          {{descartesName[index + 3]}}: <input class="ml-4 input-number" type="number" v-model="trajectoryPara.x1[index + 3]"/>
+          {{descartesName[index + 3]}}: <input class="ml-4 input-number" type="number" v-fixed="{obj: trajectoryPara, key: 'x1', index: index+3}"/>
         </v-col>
       </v-row>
       <hr />
     </template>
-
     <v-btn @click="trajectoryPlan" class="mx-auto my-4 d-block text-h7 font-weight-black">规划</v-btn>
     <hr />
-
     <!-- 绘图 -->
     <v-row class="my-4 text-center">
       <v-col class="v-col-12 v-col-md-6">
@@ -168,6 +166,10 @@ import {useStore} from "vuex";
 import {robot} from "@/utils/robot"
 import * as echarts from "echarts"
 import {spaceStateEnum, velStateEnum, jointStateEnum, pathStateEnum, attitudeStateEnum, Plan} from "@/utils/plan";
+
+const a = 111
+console.log(a.toPrecision(4))
+console.log(a.toFixed(4))
 
 const store = useStore()
 
@@ -204,10 +206,10 @@ const trajectoryPara = reactive({
   jointState: jointStateEnum.LINE,
   pathState: pathStateEnum.LINE,
   attitudeState: attitudeStateEnum.EULER,
-  q0: [0, 0, 0, 0, 0, 0],
-  q1: [0, 0, 0, 0, 0, 0],
-  x0: [0, 0, 0, 0, 0, 0],
-  x1: [0, 0, 0, 0, 0, 0],
+  q0: [...store.state.Q],
+  q1: [...store.state.Q],
+  x0: [...store.getters.X],
+  x1: [...store.getters.X],
 })
 
 const jointName = reactive([
@@ -232,8 +234,6 @@ watch(() => trajectoryPara.spaceState, ((newValue, oldValue) => {
 let dt = 0.1
 let timer = null;
 const trajectoryPlan = async () => {
-  console.log('state.Q')
-  console.log(store.state.Q)
   if (timeArray.length) {
     timeArray.pop()
     qNowArray.pop()

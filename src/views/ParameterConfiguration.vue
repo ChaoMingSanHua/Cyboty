@@ -1,8 +1,20 @@
 <template>
   <v-card class="model-container w-50">
+    <div class="my-4 text-center text-h4 font-weight-bold">结构配置</div>
+    <v-row class="my-4 text-center">
+      <v-col class="v-col-12">
+        <div class="my-3 text-center text-h5 font-weight-medium">机型选择</div>
+        <v-divider />
+      </v-col>
+      <v-col class="v-col-12 v-col-md-6">
+        <input type="radio" name="robotType" :value="RobotTypeEnum.INDUSTRY" v-model="robotType"> 工业型
+      </v-col>
+      <v-col class="v-col-12 v-col-md-6">
+        <input type="radio" name="robotType" :value="RobotTypeEnum.COOPERATION" v-model="robotType"> 协作型
+      </v-col>
+    </v-row>
     <v-row class="my-4">
       <v-col>
-        <div class="text-center text-h4 font-weight-bold">结构配置</div>
         <v-table>
           <thead>
           <tr>
@@ -25,86 +37,19 @@
         </v-table>
       </v-col>
     </v-row>
-    <!--
-    <v-row class="my-4">
-      <v-col>
-        <div class="text-center text-h4 font-weight-bold">关节限位</div>
-        <v-table>
-          <thead>
-          <tr>
-            <th class="text-center v-col-6">
-              Name
-            </th>
-            <th class="text-center v-col-6">
-              Value
-            </th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr v-for="(item, index) of paras">
-            <td class="text-center">{{ item.name }}</td>
-            <td class="text-center">
-              <input type="number" class="text-center w-75" v-model="paras[index].value"/>
-            </td>
-          </tr>
-          </tbody>
-        </v-table>
-      </v-col>
-    </v-row>
-    <v-row class="my-4">
-      <v-col>
-        <div class="text-center text-h4 font-weight-bold">DH参数(SDH)</div>
-        <v-table>
-          <thead>
-          <tr>
-            <th class="text-center v-col-2">关节</th>
-            <th class="text-center v-col-2">theta</th>
-            <th class="text-center v-col-2">d</th>
-            <th class="text-center v-col-2">a</th>
-            <th class="text-center v-col-2">alpha</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr>
-            <td></td>
-          </tr>
-          </tbody>
-        </v-table>
-      </v-col>
-    </v-row>
-    <v-row class="my-4">
-      <v-col>
-        <div class="text-center text-h4 font-weight-bold">DH参数(MDH)</div>
-        <v-table>
-          <thead>
-          <tr>
-            <th class="text-center v-col-2">关节</th>
-            <th class="text-center v-col-2">alpha</th>
-            <th class="text-center v-col-2">a</th>
-            <th class="text-center v-col-2">d</th>
-            <th class="text-center v-col-2">theta</th>
-          </tr>
-          </thead>
-          <tbody>
-          <tr>
-            <td></td>
-          </tr>
-          </tbody>
-        </v-table>
-      </v-col>
-    </v-row>
-    -->
-    <v-btn class="mx-auto d-block" @click="confirm">确认</v-btn>
+    <confirm-configuration @test="confirm"/>
   </v-card>
 </template>
 
 <script setup>
-import {computed, reactive} from "vue";
+import {computed, reactive, ref} from "vue";
 import {useStore} from "vuex";
-import {robot} from "@/utils/robot";
+import {RobotTypeEnum, robot} from "@/utils/robot";
+import ConfirmConfiguration from "@/components/dialog/ConfirmConfiguration"
 
 const store = useStore()
 
+const robotType = ref(0)
 const paras = reactive([
   {
     name: "l1",
@@ -139,8 +84,8 @@ const paras = reactive([
 const confirm = () => {
   store.commit("confirm", paras)
   // console.log(store.)
-  const robotType = {
-    robotType: 0,
+  const robotPara = {
+    robotType: robotType.value,
     linkLengths: [
       paras[0].value,
       paras[1].value,
@@ -151,7 +96,7 @@ const confirm = () => {
       paras[6].value,
     ]
   }
-  robot.configRobot(robotType)
+  robot.configRobot(robotPara)
   console.log('机器人已配置')
 }
 </script>
