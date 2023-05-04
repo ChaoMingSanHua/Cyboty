@@ -60,7 +60,6 @@
 
 <script setup>
 import { reactive } from 'vue';
-import headPotrait from "@/assets/friend/001.png"
 const friendModules = import.meta.glob("@/assets/friend/*.*")
 
 const friendAvatars = Object.keys(friendModules)
