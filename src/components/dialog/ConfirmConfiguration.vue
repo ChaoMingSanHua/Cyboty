@@ -45,7 +45,7 @@ watch(dialog, (value => {
   emit("test")
   setTimeout(() => {
     dialog.value = false
-    router.push("/dh_parameter")
+    router.push("/cyboty-dist5/dh_parameter")
   }, 1000)
 }))
 

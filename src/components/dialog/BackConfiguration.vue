@@ -30,7 +30,7 @@ if (!store.state.configComplete) {
 
 const backConfig = () => {
   dialog.value = false
-  router.push('/')
+  router.push('/cyboty-dist5')
 }
 
 

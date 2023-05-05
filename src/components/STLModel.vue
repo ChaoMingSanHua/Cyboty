@@ -40,7 +40,7 @@ const store = useStore()
 //   scene.add(link0);
 // })
 
-const link0Geometry = await stlLoader.loadAsync('/ER15-1400/meshes/base_link.STL');
+const link0Geometry = await stlLoader.loadAsync('/cyboty-dist5/ER15-1400/meshes/base_link.STL');
 const link0Material = new THREE.MeshPhongMaterial({color:0xDDDADA})
 const link0 = new THREE.Mesh(link0Geometry, link0Material);
 scene.add(link0);
@@ -55,7 +55,7 @@ joint1.material.visible = false
 const joint1RotationAxis = new THREE.Vector3(0, 1, 0)
 link0.add(joint1)
 
-const link1Geometry = await stlLoader.loadAsync('/ER15-1400/meshes/link_1.STL');
+const link1Geometry = await stlLoader.loadAsync('/cyboty-dist5/ER15-1400/meshes/link_1.STL');
 const link1Material = new THREE.MeshPhongMaterial({color:0xDDDADA})
 const link1 = new THREE.Mesh(link1Geometry, link1Material);
 joint1.add(link1);
@@ -72,7 +72,7 @@ joint2.material.visible = false
 const joint2RotationAxis = new THREE.Vector3(0.0, 0.0, 1.0)
 link1.add(joint2)
 
-const link2Geometry = await stlLoader.loadAsync('/ER15-1400/meshes/link_2.STL');
+const link2Geometry = await stlLoader.loadAsync('/cyboty-dist5/ER15-1400/meshes/link_2.STL');
 const link2Material = new THREE.MeshPhongMaterial({color:0xDDDADA})
 const link2 = new THREE.Mesh(link2Geometry, link2Material);
 joint2.add(link2);
@@ -87,7 +87,7 @@ joint3.material.visible = false
 const joint3RotationAxis = new THREE.Vector3(0.0, 0.0, 1.0)
 link2.add(joint3)
 
-const link3Geometry = await stlLoader.loadAsync('/ER15-1400/meshes/link_3.STL');
+const link3Geometry = await stlLoader.loadAsync('/cyboty-dist5/ER15-1400/meshes/link_3.STL');
 const link3Material = new THREE.MeshPhongMaterial({color:0xDDDADA})
 const link3 = new THREE.Mesh(link3Geometry, link3Material);
 joint3.add(link3);
@@ -102,7 +102,7 @@ joint4.material.visible = false
 const joint4RotationAxis = new THREE.Vector3(1.0, 0.0, 0.0)
 link3.add(joint4)
 
-const link4Geometry = await stlLoader.loadAsync('/ER15-1400/meshes/link_4.STL');
+const link4Geometry = await stlLoader.loadAsync('/cyboty-dist5/ER15-1400/meshes/link_4.STL');
 const link4Material = new THREE.MeshPhongMaterial({color:0xDDDADA})
 const link4 = new THREE.Mesh(link4Geometry, link4Material);
 joint4.add(link4);
@@ -117,7 +117,7 @@ joint5.material.visible = false
 const joint5RotationAxis = new THREE.Vector3(0.0, 0.0, 1.0)
 link4.add(joint5)
 
-const link5Geometry = await stlLoader.loadAsync('/ER15-1400/meshes/link_5.STL');
+const link5Geometry = await stlLoader.loadAsync('/cyboty-dist5/ER15-1400/meshes/link_5.STL');
 const link5Material = new THREE.MeshPhongMaterial({color:0xDDDADA})
 const link5 = new THREE.Mesh(link5Geometry, link5Material);
 joint5.add(link5);
@@ -132,7 +132,7 @@ joint6.material.visible = false
 const joint6RotationAxis = new THREE.Vector3(1.0, 0.0, 0.0)
 link5.add(joint6)
 
-const link6Geometry = await stlLoader.loadAsync('/ER15-1400/meshes/link_6.STL');
+const link6Geometry = await stlLoader.loadAsync('/cyboty-dist5/ER15-1400/meshes/link_6.STL');
 const link6Material = new THREE.MeshPhongMaterial({color:0xDDDADA})
 const link6 = new THREE.Mesh(link6Geometry, link6Material);
 joint6.add(link6);
