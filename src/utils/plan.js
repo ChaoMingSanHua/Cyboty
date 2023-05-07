@@ -424,24 +424,31 @@ class Plan {
     vecCx = math.reshape(vecCx, [3, 1])
     vecCy = math.reshape(vecCy, [3, 1])
     vecCz = math.reshape(vecCz, [3, 1])
+    let T = math.identity(4)
+    T.subset(math.index([0, 1, 2], 0), vecCx)
+    T.subset(math.index([0, 1, 2], 1), vecCy)
+    T.subset(math.index([0, 1, 2], 2), vecCz)
+    T.subset(math.index([0, 1, 2], 3), velPc)
 
-    const sFunction = (s) => {
+    const sFunction = (s, ds, dds) => {
       const thetaS = s * theta
-      const cPx = radius * math.cos(thetaS)
-      const cPy = radius * math.sin(thetaS)
-      const cPz = 0
-      const cP = transformation.euclToHomPoint3D([cPx, cPy, cPz])
-      let T = math.identity(4)
-      T.subset(math.index([0, 1, 2], 0), vecCx)
-      T.subset(math.index([0, 1, 2], 1), vecCy)
-      T.subset(math.index([0, 1, 2], 2), vecCz)
-      T.subset(math.index([0, 1, 2], 2), pc)
+      const x_ = radius * math.cos(thetaS)
+      const y_ = radius * math.sin(thetaS)
+      const dx_ = - radius * theta * math.sin(thetaS)
+      const dy_ = radius * theta * math.cos(thetaS)
+      const ddx_ = - radius * math.pow(theta, 2) * math.cos(thetaS)
+      const ddy_ = - radius * math.pow(theta, 2) * math.sin(thetaS)
+      // const cPz = 0
+      const cP = transformation.euclToHomPoint3D([x_, y_, 0])
       const p = math.multiply(T, cP)
-      // return [p.get([0, 0]), p.get([1, 0]), p.get([2, 0])]
+      const dp = math.multiply(T, transformation.euclToHomPoint3D([dx_, dy_, 0]))
+      const ddp = math.multiply(T, transformation.euclToHomPoint3D([ddx_, ddy_, 0]))
       return {
         p: [p.get([0, 0]), p.get([1, 0]), p.get([2, 0])],
-        dp: [0, 0, 0],
-        ddp: [0, 0, 0]
+        dp: [dp.get([0, 0]) * ds, dp.get([1, 0]) * ds, dp.get([2, 0]) * ds],
+        ddp: [ddp.get([0, 0]) * ds + dp.get([0, 0]) * dds,
+          ddp.get([1, 0]) * ds + dp.get([1, 0]) * dds,
+          ddp.get([2, 0]) * ds + dp.get([2, 0]) * dds]
       }
     }
 
