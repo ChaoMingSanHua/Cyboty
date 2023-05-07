@@ -30,7 +30,7 @@ export default createStore({
         Theta: state.Theta
       }
     },
-    T: (state, getters) => {
+    T: (state) => {
       return robot.fKine([...state.Q])
     },
     px: ((state, getters) => {

@@ -114,7 +114,7 @@
               <div class="text-h6">中间点</div>
             </v-col>
             <v-col class="v-col-4"  v-for="(value, index) of trajectoryPara.x1.slice(0, 3)">
-              {{descartesName[index]}}: <input class="ml-4 input-number" type="number" v-fixed="{obj: trajectoryPara, key: 'x1', index: index}"/> (m)
+              {{descartesName[index]}}: <input class="ml-4 input-number" type="number" v-fixed="{obj: trajectoryPara, key: 'xc', index: index}"/> (m)
             </v-col>
           </template>
           <!-- 目标点 -->
@@ -213,10 +213,11 @@ const trajectoryPara = reactive({
   jointState: jointStateEnum.LINE,
   pathState: pathStateEnum.LINE,
   attitudeState: attitudeStateEnum.EULER,
-  q0: [...store.state.Q],
-  q1: [...store.state.Q],
-  x0: [...store.getters.X],
-  x1: [...store.getters.X],
+  q0: [...store.state.Q],   // 关节起始角
+  q1: [...store.state.Q],   // 关节终止角
+  x0: [...store.getters.X], // 末端起始点
+  x1: [...store.getters.X], // 末端终点点
+  xc: [...store.getters.X], // 圆弧中心点/中间点
 })
 
 const jointName = reactive([
@@ -235,6 +236,9 @@ watch(() => trajectoryPara.spaceState, ((newValue, oldValue) => {
     trajectoryPara.x1.forEach((value, index, array) => {
       array[index] = store.getters.X[index]
     })
+    trajectoryPara.xc.forEach((value, index, array) => {
+      array[index] = store.getters.X[index]
+    })
   }
 }))
 
@@ -250,6 +254,7 @@ const trajectoryPlan = async () => {
     ddqNowArray.pop()
     ddxNowArray.pop()
   }
+  console.log(trajectoryPara)
   const plan = new Plan(trajectoryPara)
 
   if (timer) {
@@ -317,6 +322,9 @@ const trajectoryPlan = async () => {
   trajectoryPara.x0.forEach((value, index, array) => {
     array[index] = store.getters.X[index]
   })
+  console.log('终点')
+  console.log(trajectoryPara.q0)
+  console.log(trajectoryPara.x0)
   renderJointPosition()
   renderDescartesPosition()
   renderJointVelocity()
