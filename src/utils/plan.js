@@ -158,8 +158,8 @@ class Plan {
         sFunction = this.#pathArcPoint(p0, pc, p1)
         break
       case pathStateEnum.POINTS:
-        const {ps} = this.#trajPara
-        sFunction = this.#pathPoints(ps)
+        const {points} = this.#trajPara
+        sFunction = this.#pathPoints(points)
         break
       default:
         break
@@ -597,11 +597,119 @@ class Plan {
   }
 
   #pathPoints = (ps) => {
+    console.log(ps)
     const sFunction = (s) => {
-
+      return {
+        // TODO: interpolationCubicPathSynthesis
+        p: [0, 0, 0],
+        dp: [0, 0, 0],
+        ddp: [0, 0, 0],
+      }
     }
     return sFunction
   }
+
+  /**
+   * 圆弧过渡
+   * @param p0
+   * @param pc
+   * @param p1
+   * @param r
+   * @returns {{r, c: math.MathArray, thetaM: number, pt1: math.MathArray, pt0: math.MathArray, d1: number | math.BigNumber, d2: number}|{r: number, c, thetaM: number, pt1, pt0, d1: number | math.BigNumber, d2: number}}
+   */
+  #pathSegmentTrans = (p0, pc, p1, r) => {
+    const vecP0 = math.reshape(math.matrix(p0), [3, 1])
+    const vecPc = math.reshape(math.matrix(pc), [3, 1])
+    const vecP1 = math.reshape(math.matrix(p1), [3, 1])
+
+    const vecPcP0 = math.subtract(vecP0, vecPc)
+    const vecPcP1 = math.subtract(vecP1, vecPc)
+    const normPcP0 = math.norm(math.squeeze(vecPcP0))
+    const normPcP1 = math.norm(math.squeeze(vecPcP1))
+    const theta = math.acos(math.dot(vecPcP0, vecPcP1) / (normPcP0 * normPcP1))
+    let pt0, pt1, d1, d2, thetaM, c
+    if (transformation.nearZero(math.abs(theta) - math.pi)) {
+      pt0 = pc
+      pt1 = pc
+      d1 = math.norm(math.subtract(pt0, p0))
+      d2 = 0
+      thetaM = 0
+      c = p1
+      r = 0
+      return {
+        pt0,
+        pt1,
+        d1,
+        d2,
+        thetaM,
+        c,
+        r
+      }
+    }
+    const vecPcPt0 = math.multiply(r / math.tan(theta / 2) / normPcP0, vecPcP0)
+    const vecPcPt1 = math.multiply(r / math.tan(theta / 2) / normPcP1, vecPcP1)
+    const vecPt0 = math.add(vecPc, vecPcPt0)
+    const vecPt1 = math.add(vecPc, vecPcPt1)
+    d1 = math.norm(math.squeeze(math.subtract(vecPt0, vecP0)))
+    thetaM = math.pi - theta
+    d2 = thetaM * r
+
+    const vecPt0M = 0.5 * math.subtract(vecPt1, vecPt0)
+    const vecM = math.add(vecPt0, vecPt0M)
+    const vecPcM = math.subtract(vecM, vecPc)
+    const normPcM = math.norm(math.squeeze(math.subtract(vecM, vecPc)))
+    const normPcC = r / math.sin(theta / 2)
+    const vecPcC = math.multiply(normPcC / normPcM, vecPcM)
+    const vecC = math.add(vecPc, vecPcC)
+    return {
+      pt0: math.squeeze(vecPt0).toArray(),
+      pt1: math.squeeze(vecPt1).toArray(),
+      d1: d1,
+      d2: d2,
+      thetaM: thetaM,
+      c: math.squeeze(vecC).toArray(),
+      r: r
+    }
+  }
+
+  /**
+   * 路径合成
+   * @param path
+   * @param pathPt0
+   * @param pathPt1
+   * @param pathC
+   * @param pathTheta
+   * @param pathR
+   * @returns {{pathLength: number, pathLengthI: *[]}}
+   */
+  #pathSynthesis = (path, pathPt0, pathPt1, pathC, pathTheta, pathR) => {
+    let pathLength = 0
+    const num = pathPt0.length
+    const pathLengthI = []
+    let l = math.norm(math.subtract(path[0], pathPt0[0]))
+    pathLength += l
+    pathLengthI.push(l)
+    for (let i = 0; i < num - 1; i++) {
+      l = pathTheta[i] * pathR[i]
+      pathLength += l
+      pathLengthI.push(l)
+      l = math.norm(math.subtract(pathPt1[i], pathPt0[i]))
+      pathLength += l
+      pathLengthI.push(l)
+    }
+    l = pathTheta.slice(-1) * pathR.slice(-1)
+    pathLength += l
+    pathLengthI.push(l)
+    l = math.norm(math.subtract(path.slice(-1), pathPt1.slice(-1)))
+    pathLength += l
+    pathLengthI.push(l)
+    return {
+      pathLength,
+      pathLengthI
+    }
+  }
+
+
 
   /**
    * 姿态规划： 欧拉角
