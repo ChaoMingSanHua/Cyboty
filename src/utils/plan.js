@@ -159,7 +159,7 @@ class Plan {
         break
       case pathStateEnum.POINTS:
         const {points} = this.#trajPara
-        sFunction = this.#pathPoints(points)
+        sFunction = this.#pathPoints([p0, ...points])
         break
       default:
         break
@@ -597,13 +597,58 @@ class Plan {
   }
 
   #pathPoints = (ps) => {
-    console.log(ps)
-    const sFunction = (s) => {
+    const pathPt0 = []
+    const pathPt1 = []
+    const pathC = []
+    const pathThetaM = []
+    const pathR = []
+    const pathD1 = []
+    const pathD2 = []
+    for (let i = 1; i < ps.length - 1; i++) {
+      const p0 = ps[i - 1]
+      const pc = ps[i]
+      const p1 = ps[i + 1]
+      const r = 0.02
+      const pathSegment = this.#pathSegmentTrans(p0, pc, p1, r)
+      pathPt0.push(pathSegment.pt0)
+      pathPt1.push(pathSegment.pt1)
+      pathC.push(pathSegment.c)
+      pathThetaM.push(pathSegment.thetaM)
+      pathR.push(pathSegment.r)
+      pathD1.push(pathD1)
+      pathD2.push(pathD2)
+    }
+
+    const {pathLength, pathLengthI} = this.#pathSynthesis(ps, pathPt0, pathPt1, pathC, pathThetaM, pathR)
+    const sFunction = (s, ds, dds) => {
+      const sLength = s * pathLength
+      const rowsPathLengthI = pathLengthI.length
+      const PLine = [ps[0]]
+      const rowsPathPt0 = pathPt0.length
+      for (let i = 0; i < rowsPathPt0; i++) {
+        PLine.push(pathPt0[i])
+        PLine.push(pathPt1[i])
+      }
+      PLine.push(ps.at(-1))
+
+      let sFunction, sI
+      for (let i = 0; i < rowsPathLengthI; i++) {
+        if (sLength <= math.sum(pathLengthI.slice(0, i + 1))) {
+          sI = (sLength - (math.sum(pathLengthI.slice(0, i + 1)) - pathLengthI[i])) / pathLengthI[i]
+          if (math.mod(i, 2) === 0) {
+            sFunction = this.#pathLine(PLine[i], PLine[i + 1])
+            break
+          } else {
+            sFunction = this.#pathArcCenter(PLine[i], pathC[(i - 1) / 2], PLine[i + 1])
+            break
+          }
+        }
+      }
+      const {p, dp, ddp} = sFunction(sI, ds, dds)
       return {
-        // TODO: interpolationCubicPathSynthesis
-        p: [0, 0, 0],
-        dp: [0, 0, 0],
-        ddp: [0, 0, 0],
+        p,
+        dp,
+        ddp,
       }
     }
     return sFunction
@@ -654,7 +699,7 @@ class Plan {
     thetaM = math.pi - theta
     d2 = thetaM * r
 
-    const vecPt0M = 0.5 * math.subtract(vecPt1, vecPt0)
+    const vecPt0M = math.multiply(0.5, math.subtract(vecPt1, vecPt0))
     const vecM = math.add(vecPt0, vecPt0M)
     const vecPcM = math.subtract(vecM, vecPc)
     const normPcM = math.norm(math.squeeze(math.subtract(vecM, vecPc)))
@@ -700,7 +745,7 @@ class Plan {
     l = pathTheta.slice(-1) * pathR.slice(-1)
     pathLength += l
     pathLengthI.push(l)
-    l = math.norm(math.subtract(path.slice(-1), pathPt1.slice(-1)))
+    l = math.norm(math.subtract(path.at(-1), pathPt1.at(-1)))
     pathLength += l
     pathLengthI.push(l)
     return {

@@ -143,7 +143,7 @@
                           v-fixed="{obj: trajectoryPara, key: 'pointNum'}"/>
           </v-col>
           <v-col class="v-col-12 pa-0"></v-col>
-          <template v-for="(val, ind) in 3">
+          <template v-for="(val, ind) in 2">
             <v-col class="v-col-4" v-for="(value, index) in 3">
               {{descartesName[index]}}: <input class="ml-4 input-number" type="number"
                                                v-fixed="{obj: trajectoryPara, key: 'points' + val, index}"/>
@@ -243,9 +243,9 @@ const trajectoryPara = reactive({
   x0: [...store.getters.X], // 末端起始点
   x1: [...store.getters.X], // 末端终点点
   xc: [...store.getters.X], // 圆弧中心点/中间点
-  pointNum: 0,
-  points1: [0, 0.1, 0.2],
-  points2: [0.3, 0.4, 0.5],
+  pointNum: 2,
+  points1: [0.4690, 0.1789, 0.9450],
+  points2: [0.5190, 0.2289, 0.9450],
   points3: [0.6, 0.7, 0.8]
 })
 
@@ -287,7 +287,7 @@ const trajectoryPlan = async () => {
   trajectoryPara.points = [
     [...trajectoryPara.points1],
     [...trajectoryPara.points2],
-    [...trajectoryPara.points3]
+    // [...trajectoryPara.points3]
   ]
   const plan = new Plan(trajectoryPara)
 
