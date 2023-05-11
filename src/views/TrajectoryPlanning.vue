@@ -138,15 +138,15 @@
           </v-col>
         </template>
         <template v-else-if="[pathStateEnum.POINTS].indexOf(trajectoryPara.pathState) !== -1">
-          <v-col class="v-col-12">
+          <v-col class="v-col-4 mx-auto">
             目标点数量: <input class="ml-4 input-number" type="number"
-                          v-fixed="{obj: trajectoryPara, key: 'pointNum'}"/>
+                          v-fixed="{obj: trajectoryPara, key: 'pointNum', digit: 0}"/>
           </v-col>
           <v-col class="v-col-12 pa-0"></v-col>
-          <template v-for="(val, ind) in 2">
+          <template v-for="(val, ind) in trajectoryPara.pointNum">
             <v-col class="v-col-4" v-for="(value, index) in 3">
               {{descartesName[index]}}: <input class="ml-4 input-number" type="number"
-                                               v-fixed="{obj: trajectoryPara, key: 'points' + val, index}"/>
+                                               v-fixed="{obj: trajectoryPara.points, key: ind, index}"/> (m)
             </v-col>
           </template>
         </template>
@@ -243,10 +243,11 @@ const trajectoryPara = reactive({
   x0: [...store.getters.X], // 末端起始点
   x1: [...store.getters.X], // 末端终点点
   xc: [...store.getters.X], // 圆弧中心点/中间点
-  pointNum: 2,
-  points1: [0.4690, 0.1789, 0.9450],
-  points2: [0.5190, 0.2289, 0.9450],
-  points3: [0.6, 0.7, 0.8]
+  pointNum: 1,
+  points: [[...store.getters.X.slice(0, 3)]],
+  // points1: [0.4690, 0.1789, 0.9450],
+  // points2: [0.5190, 0.2289, 0.9450],
+  // points3: [0.6, 0.7, 0.8]
 })
 
 const jointName = reactive([
@@ -268,8 +269,21 @@ watch(() => trajectoryPara.spaceState, ((newValue, oldValue) => {
     trajectoryPara.xc.forEach((value, index, array) => {
       array[index] = store.getters.X[index]
     })
+    trajectoryPara.points[0].forEach((value, index, array) => {
+      array[index] = store.getters.X[index]
+    })
   }
 }))
+
+watch(() => trajectoryPara.pointNum, (newValue, oldValue) => {
+  if (newValue < oldValue) {
+    trajectoryPara.points.length = newValue
+  } else {
+    for (let i = 0; i < newValue - oldValue; i++) {
+      trajectoryPara.points.push([...store.getters.X.slice(0, 3)])
+    }
+  }
+})
 
 let dt = 0.1
 let timer = null;
@@ -283,12 +297,6 @@ const trajectoryPlan = async () => {
     ddqNowArray.pop()
     ddxNowArray.pop()
   }
-  console.log(trajectoryPara)
-  trajectoryPara.points = [
-    [...trajectoryPara.points1],
-    [...trajectoryPara.points2],
-    // [...trajectoryPara.points3]
-  ]
   const plan = new Plan(trajectoryPara)
 
   if (timer) {
@@ -356,9 +364,6 @@ const trajectoryPlan = async () => {
   trajectoryPara.x0.forEach((value, index, array) => {
     array[index] = store.getters.X[index]
   })
-  console.log('终点')
-  console.log(trajectoryPara.q0)
-  console.log(trajectoryPara.x0)
   renderJointPosition()
   renderDescartesPosition()
   renderJointVelocity()

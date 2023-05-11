@@ -631,10 +631,12 @@ class Plan {
       }
       PLine.push(ps.at(-1))
 
-      let sFunction, sI
+      let sFunction, sI, dsI, ddsI
       for (let i = 0; i < rowsPathLengthI; i++) {
         if (sLength <= math.sum(pathLengthI.slice(0, i + 1))) {
           sI = (sLength - (math.sum(pathLengthI.slice(0, i + 1)) - pathLengthI[i])) / pathLengthI[i]
+          dsI = ds * pathLength / pathLengthI[i]
+          ddsI = dds * pathLength / pathLengthI[i]
           if (math.mod(i, 2) === 0) {
             sFunction = this.#pathLine(PLine[i], PLine[i + 1])
             break
@@ -644,7 +646,9 @@ class Plan {
           }
         }
       }
-      const {p, dp, ddp} = sFunction(sI, ds, dds)
+      console.log(sI)
+      // TODO: ds dds应该用sI的导数
+      const {p, dp, ddp} = sFunction(sI, dsI, ddsI)
       return {
         p,
         dp,
