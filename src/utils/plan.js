@@ -441,8 +441,10 @@ class Plan {
       // const cPz = 0
       const cP = transformation.euclToHomPoint3D([x_, y_, 0])
       const p = math.multiply(T, cP)
-      const dp = math.multiply(T, transformation.euclToHomPoint3D([dx_, dy_, 0]))
-      const ddp = math.multiply(T, transformation.euclToHomPoint3D([ddx_, ddy_, 0]))
+      const dp = math.multiply(T.subset(math.index(math.range(0, 3), math.range(0, 3))),
+        math.matrix([[dx_], [dy_], [0]]))
+      const ddp = math.multiply(T.subset(math.index(math.range(0, 3), math.range(0, 3))),
+        math.matrix([[ddx_], [ddy_], [0]]))
       return {
         p: [p.get([0, 0]), p.get([1, 0]), p.get([2, 0])],
         dp: [dp.get([0, 0]) * ds, dp.get([1, 0]) * ds, dp.get([2, 0]) * ds],
@@ -455,7 +457,6 @@ class Plan {
     return sFunction
   }
 
-  // TODO: 三点圆弧路径规划
   #pathArcPoint = (p0, pc, p1) => {
     // 外接圆方程
     const A1 = (p0[1] - p1[1]) * (pc[2] - p1[2]) - (pc[1] - p1[1]) * (p0[2] - p1[2])
@@ -615,8 +616,8 @@ class Plan {
       pathC.push(pathSegment.c)
       pathThetaM.push(pathSegment.thetaM)
       pathR.push(pathSegment.r)
-      pathD1.push(pathD1)
-      pathD2.push(pathD2)
+      pathD1.push(pathSegment.d1)
+      pathD2.push(pathSegment.d2)
     }
 
     const {pathLength, pathLengthI} = this.#pathSynthesis(ps, pathPt0, pathPt1, pathC, pathThetaM, pathR)
@@ -634,7 +635,7 @@ class Plan {
       let sFunction, sI, dsI, ddsI
       for (let i = 0; i < rowsPathLengthI; i++) {
         if (sLength <= math.sum(pathLengthI.slice(0, i + 1))) {
-          sI = (sLength - (math.sum(pathLengthI.slice(0, i + 1)) - pathLengthI[i])) / pathLengthI[i]
+          sI = (sLength - math.sum(pathLengthI.slice(0, i))) / pathLengthI[i]
           dsI = ds * pathLength / pathLengthI[i]
           ddsI = dds * pathLength / pathLengthI[i]
           if (math.mod(i, 2) === 0) {
@@ -644,10 +645,10 @@ class Plan {
             sFunction = this.#pathArcCenter(PLine[i], pathC[(i - 1) / 2], PLine[i + 1])
             break
           }
+        } else {
+          sFunction = this.#pathLine(PLine.at(-2), PLine.at(-1))
         }
       }
-      console.log(sI)
-      // TODO: ds dds应该用sI的导数
       const {p, dp, ddp} = sFunction(sI, dsI, ddsI)
       return {
         p,
@@ -735,14 +736,14 @@ class Plan {
     let pathLength = 0
     const num = pathPt0.length
     const pathLengthI = []
-    let l = math.norm(math.subtract(path[0], pathPt0[0]))
+    let l = math.norm(math.subtract(pathPt0[0], path[0]))
     pathLength += l
     pathLengthI.push(l)
     for (let i = 0; i < num - 1; i++) {
       l = pathTheta[i] * pathR[i]
       pathLength += l
       pathLengthI.push(l)
-      l = math.norm(math.subtract(pathPt1[i], pathPt0[i]))
+      l = math.norm(math.subtract(pathPt0[i + 1], pathPt1[i]))
       pathLength += l
       pathLengthI.push(l)
     }
