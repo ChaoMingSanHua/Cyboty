@@ -1,14 +1,87 @@
 <template>
   <back-configuration />
   <v-card class="model-container">
-    <div class="text-center text-h4 font-weight-bold">正运动学</div>
-    <div class="input-container mt-4">
-      <div v-for="(value, index) of store.state.Q">
-        关节{{ index + 1 }}:
-        <input type="number" class="ml-4" v-fixed="{obj:store.state.Q, key: index}">
-        rad
-      </div>
-    </div>
+    <div class="my-4 text-center text-h4 font-weight-bold">正运动学</div>
+    <v-divider />
+    <v-container class="my-4 text-center">
+      <v-row>
+        <v-col class="v-col-12 v-col-md-4 mx-auto" v-for="(value, index) of store.state.Q" :key="index">
+          关节{{ index + 1 }}:
+          <input type="number" class="ml-4 input-number" v-fixed="{obj:store.state.Q, key: index}">
+          rad
+        </v-col>
+      </v-row>
+    </v-container>
+
+    <v-divider />
+
+    <v-container class="my-4 text-center">
+      <div class="text-h5 my-3">位置</div>
+      <v-row>
+        <v-col class="v-col-12 v-col-md-4 mx-auto" v-for="(value, index) in 3" :key="index">
+          {{descartesName[index]}}: {{ $filters.toFixed(store.getters.X[index]) }}
+        </v-col>
+      </v-row>
+    </v-container>
+
+    <v-divider />
+
+    <v-container class="my-4 text-center">
+      <div class="text-h5 my-3">姿态</div>
+      <div class="text-h6 my-2">变换矩阵</div>
+      <v-row justify="center">
+        <v-col class="v-col-12 v-col-md-4">
+          <v-table>
+            <tbody>
+            <tr v-for="i in 3">
+              <td v-for="j in 3">{{ $filters.toFixed(store.getters.T.get([i - 1, j - 1])) }}</td>
+            </tr>
+            </tbody>
+          </v-table>
+        </v-col>
+      </v-row>
+
+      <v-divider />
+
+      <div class="text-h6 my-2">欧拉角</div>
+      <v-row justify="center">
+        <v-col class="v-col-12 v-col-md-4 mx-auto" v-for="(value, index) in 3" :key="index">
+          {{descartesName[index + 3]}} : {{ $filters.toFixed(store.getters.X[index + 3]) }}
+        </v-col>
+      </v-row>
+
+      <v-divider />
+
+      <div class="text-h6 my-2">四元数</div>
+      <v-row>
+        <v-col class="v-col-12 v-col-md-3 mx-auto" v-for="(value, index) in 4" :key="index">
+          {{quaternionName[index]}} : {{$filters.toFixed(store.getters.q[index])}}
+        </v-col>
+      </v-row>
+
+      <div class="text-h6 my-2">轴角</div>
+      <v-row justify="space-around">
+        <v-col class="v-col-12 v-col-md-3">
+          <div>轴线</div>
+          <v-table>
+            <tbody>
+              <tr v-for="(value, index) in 3">
+                <td>{{$filters.toFixed(store.getters.axisTheta.axis[index])}}</td>
+              </tr>
+            </tbody>
+          </v-table>
+        </v-col>
+        <v-col class="v-col-12 v-col-md-3 d-inline-flex flex-column">
+          <div>角度</div>
+          <div class="my-auto" >{{$filters.toFixed(store.getters.axisTheta.theta)}}</div>
+        </v-col>
+      </v-row>
+      <v-divider />
+
+
+
+    </v-container>
+
     <v-row class="mt-4">
       <v-col class="position-attitude" md="4" cols="12">
         <h2>位置</h2>
@@ -59,13 +132,23 @@
         </v-table>
       </v-col>
     </v-row>
+
   </v-card>
 </template>
 
 <script setup>
 import {useStore} from "vuex";
+import {reactive} from "vue";
 
 const store = useStore()
+const descartesName = reactive([
+  "Px", "Py", "Pz", "Roll", "Pitch", "Yaw"
+])
+const quaternionName = reactive([
+  "w", "x", "y", "z"
+])
+
+console.log(store.getters.axisTheta)
 
 </script>
 
@@ -73,7 +156,6 @@ const store = useStore()
 .model-container {
   .input-container {
     display: flex;
-    //flex-direction: row;
 
     input {
       width: 40%;
@@ -89,20 +171,14 @@ const store = useStore()
     flex-direction: column;
     justify-content: space-between;
     align-items: center;
-
-    //.position-attitude {
-    //  display: flex;
-    //  flex-direction: row;
-    //  justify-content: space-around;
-    //  align-items: center;
-    //}
-    //
-    //.rotationMatrix {
-    //  display: flex;
-    //  flex-direction: column;
-    //  justify-content: space-around;
-    //  align-items: center;
-    //}
   }
+}
+
+.input-number {
+  width: 40%;
+  border-width: 2px !important;
+  border-color: #00000088;
+  border-radius: 10px;
+  border-style: solid;
 }
 </style>

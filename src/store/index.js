@@ -53,7 +53,16 @@ export default createStore({
     }),
     X: ((state, getters) => {
       return [getters.px, getters.py, getters.pz, getters.roll, getters.pitch, getters.yaw]
-    })
+    }),
+    R: ((state, getters) => {
+      return getters.T.subset(math.index(math.range(0, 3), math.range(0, 3)))
+    }),
+    q: ((state, getters) => {
+      return transformation.Transformation.RToQuaternion(getters.R)
+    }),
+    axisTheta: ((state, getters) => {
+      return transformation.Transformation.RToAxisAngle(getters.R)
+    }),
   },
   mutations: {
     confirm(state, paras) {

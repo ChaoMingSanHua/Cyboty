@@ -794,7 +794,7 @@ class Plan {
       deltaQ = -deltaQ
     }
 
-    const sFunction = (s) => {
+    const sFunction = (s, ds, dds) => {
       let k0 = 0
       let k1 = 0
       if (deltaQ > 0.9995) {
