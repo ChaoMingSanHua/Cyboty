@@ -341,16 +341,46 @@ const trajectoryPlan = async () => {
     ddqNowArray.pop()
     ddxNowArray.pop()
   }
-  const plan = new Plan(trajectoryPara)
+
+  let tf = 0
+
+  if (jointStateEnum.MOTION === trajectoryPara.jointState) {
+    var jointsArray = []
+    const readMotionFile = () => new Promise(resolve => {
+      const resultFile = fileInput.value.files[0]
+      const reader = new FileReader()
+      reader.readAsDataURL(resultFile)
+      reader.onload = async function (e) {
+        const urlData = this.result
+        const trajectory = window.atob(urlData.split(',')[1]).trim()
+        const trajectoryData = trajectory.split('\r\n')
+        trajectoryData.forEach(value => {
+          const v = value.split(',')
+          const joints = []
+          for (let i = 1; i < v.length; i++) {
+            joints.push(parseFloat(v[i]))
+          }
+          jointsArray.push(joints)
+        })
+        resolve()
+      }
+    })
+    await readMotionFile()
+    tf = (jointsArray.length - 1) * dt
+  } else {
+    var plan = new Plan(trajectoryPara)
+    tf = plan.getTf
+  }
 
   if (timer) {
     clearInterval(timer)
   }
 
   let t = 0
+  let dqLast = [0, 0, 0, 0, 0, 0]
   const planning = () => new Promise(resolve => {
     timer = setInterval(() => {
-      if ((t > plan.getTf) || (Math.abs(t - plan.getTf) < 1e-6)) {
+      if ((t > tf) || (Math.abs(t - tf) < 1e-6)) {
         clearInterval(timer)
         setTimeout(() => {
           timeStart.value += t - dt
@@ -364,16 +394,38 @@ const trajectoryPlan = async () => {
       const ddxNow = []
       switch (trajectoryPara.spaceState) {
         case spaceStateEnum.JOINT:
-          const {q, dq, ddq} = plan.getTrajectory(t)
-          const {dxs, ddxs} = robot.getDescartesViaJoint(q, dq, ddq)
-          store.commit('setQ', q)
-          for (let i = 0; i < 6; i++) {
-            dqNow.push(dq[i])
-            ddqNow.push(ddq[i])
-            dxNow.push(dxs[i])
-            ddxNow.push(ddxs[i])
+          switch (trajectoryPara.jointState) {
+            case jointStateEnum.LINE:
+              const {q, dq, ddq} = plan.getTrajectory(t)
+              const {dxs, ddxs} = robot.getDescartesViaJoint(q, dq, ddq)
+              store.commit("setQ", q)
+              for (let i = 0; i < 6; i++) {
+                dqNow.push(dq[i])
+                ddqNow.push(ddq[i])
+                dxNow.push(dxs[i])
+                ddxNow.push(ddxs[i])
+              }
+              break
+            case jointStateEnum.MOTION:
+              if (jointsArray.length > 0) {
+                const lastQ = [...store.state.Q]
+                const thisQ = jointsArray.shift()
+                store.commit("setQ", thisQ)
+                for (let i = 0; i < 6; i++) {
+                  dqNow.push((thisQ[i] - lastQ[i]) / dt)
+                  ddqNow.push((dqNow[i] - dqLast[i]) / dt)
+                }
+                dqLast = [...dqNow]
+                const {dxs, ddxs} = robot.getDescartesViaJoint(thisQ, dqNow, ddqNow)
+                for (let i = 0; i < 6; i++) {
+                  dxNow.push(dxs[i])
+                  ddxNow.push(ddxs[i])
+                }
+              }
+              break
+            default:
+              break
           }
-
           break
         case spaceStateEnum.DESCARTES:
           const {x, dx, ddx} = plan.getTrajectory(t)
@@ -408,6 +460,13 @@ const trajectoryPlan = async () => {
   trajectoryPara.x0.forEach((value, index, array) => {
     array[index] = store.getters.X[index]
   })
+  trajectoryPara.q1.forEach((value, index, array) => {
+    array[index] = store.state.Q[index]
+  })
+  trajectoryPara.x1.forEach((value, index, array) => {
+    array[index] = store.getters.X[index]
+  })
+
   renderJointPosition()
   renderDescartesPosition()
   renderJointVelocity()

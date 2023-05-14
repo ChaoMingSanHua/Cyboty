@@ -32,14 +32,10 @@ const attitudeStateEnum = {
 }
 
 class Plan {
-  /**
-   * {x0, x1, tf, vMax, aMax}
-   */
   #trajPara
   #interpolationPara
   #sFunction
   constructor(trajectoryPara) {
-    // this.#trajPara = trajectoryPara
     this.#trajPara = JSON.parse(JSON.stringify(trajectoryPara))
     this.#interpolationPara = null
     const {x0, x1, xc} = this.#trajPara
@@ -77,7 +73,6 @@ class Plan {
 
   /**
    * 空间规划
-   * @param spacePara
    * @returns {null}
    */
   #spacePlan = () => {
@@ -94,9 +89,8 @@ class Plan {
         this.#trajPara.errors = errors
         break
       case spaceStateEnum.DESCARTES:
-        const {pathPara, attitudePara} = this.#trajPara
-        const sFunctionPath = this.#pathPlan(pathPara)
-        const sFunctionAttitude = this.#attitudePlan(attitudePara)
+        const sFunctionPath = this.#pathPlan()
+        const sFunctionAttitude = this.#attitudePlan()
         sFunction = (s, ds, dds) => {
           const {p, dp, ddp} = sFunctionPath(s, ds, dds)
           const {a, da, dda} = sFunctionAttitude(s,ds, dds)
@@ -120,7 +114,7 @@ class Plan {
 
   /**
    * 关节规划
-   * @param jointPara
+   * @returns {function(*, *, *): {ddq: *, q: *, dq: *}}
    */
   #jointPlan = () => {
     const {q0, q1} = this.#trajPara
@@ -141,10 +135,9 @@ class Plan {
 
   /**
    * 路径规划
-   * @param pathPara
    * @returns {null}
    */
-  #pathPlan = (pathPara) => {
+  #pathPlan = () => {
     const {pathState, p0, p1, pc} = this.#trajPara
     let sFunction = null
     switch (pathState) {
@@ -170,10 +163,9 @@ class Plan {
 
   /**
    * 姿态规划
-   * @param attitudePara
    * @returns {null}
    */
-  #attitudePlan = (attitudePara) => {
+  #attitudePlan = () => {
     const {attitudeState, a0, a1} = this.#trajPara
     let sFunction = null
     switch (attitudeState) {
@@ -186,7 +178,6 @@ class Plan {
         sFunction = this.#attitudeQuaternion(q0, q1)
         break
       case attitudeStateEnum.AXIS_ANGLE:
-        // TODO:
         const axisAngle1 = Transformation.rpyToAxisAngle(...a0)
         const axisAngle2 = Transformation.rpyToAxisAngle(...a1)
         sFunction = this.#attitudeAxisAngle(axisAngle1, axisAngle2)
@@ -437,8 +428,7 @@ class Plan {
       const dy_ = radius * theta * math.cos(thetaS)
       const ddx_ = - radius * math.pow(theta, 2) * math.cos(thetaS)
       const ddy_ = - radius * math.pow(theta, 2) * math.sin(thetaS)
-      // const cPz = 0
-      const cP = transformation.euclToHomPoint3D([x_, y_, 0])
+      const cP = Transformation.euclToHomPoint3D([x_, y_, 0])
       const p = math.multiply(T, cP)
       const dp = math.multiply(T.subset(math.index(math.range(0, 3), math.range(0, 3))),
         math.matrix([[dx_], [dy_], [0]]))
@@ -675,9 +665,10 @@ class Plan {
     const vecPcP1 = math.subtract(vecP1, vecPc)
     const normPcP0 = math.norm(math.squeeze(vecPcP0))
     const normPcP1 = math.norm(math.squeeze(vecPcP1))
+    // TODO: 需要对acos进行判断
     const theta = math.acos(math.dot(vecPcP0, vecPcP1) / (normPcP0 * normPcP1))
     let pt0, pt1, d1, d2, thetaM, c
-    if (transformation.nearZero(math.abs(theta) - math.pi)) {
+    if (Transformation.nearZero(math.abs(theta) - math.pi)) {
       pt0 = pc
       pt1 = pc
       d1 = math.norm(math.subtract(pt0, p0))
@@ -695,6 +686,11 @@ class Plan {
         r
       }
     }
+    const rMax = math.multiply(math.min([normPcP0, normPcP1]), math.tan(theta / 2))
+    if (r > rMax) {
+      r = rMax
+    }
+
     const vecPcPt0 = math.multiply(r / math.tan(theta / 2) / normPcP0, vecPcP0)
     const vecPcPt1 = math.multiply(r / math.tan(theta / 2) / normPcP1, vecPcP1)
     const vecPt0 = math.add(vecPc, vecPcPt0)
@@ -790,6 +786,7 @@ class Plan {
     if (deltaQ < 0) {
       deltaQ = -deltaQ
     }
+    const theta = math.atan2(math.sqrt(1 - math.pow(deltaQ, 2)), deltaQ)
 
     const sFunction = (s, ds, dds) => {
       let k0 = 0
@@ -798,7 +795,6 @@ class Plan {
         k0 = 1 - s
         k1 = s
       } else {
-        const theta = math.atan2(math.sqrt(1 - math.pow(deltaQ, 2)), deltaQ)
         k0 = math.sin((1 - s) * theta) / math.sin(theta)
         k1 = math.sin(s * theta) / math.sin(theta)
       }
@@ -813,7 +809,6 @@ class Plan {
     return sFunction
   }
 
-  // TODO: 姿态规划： 轴角
   /**
    * 姿态规划： 轴角
    * @param axisAngle0
@@ -827,7 +822,6 @@ class Plan {
 
 
     const sFunction = (s, ds, dds) => {
-      console.log(log3)
       const R = math.multiply(R0, Transformation.MatrixExp3(math.multiply(log3, s)))
       const a = Transformation.RTorpy(R)
       return {
