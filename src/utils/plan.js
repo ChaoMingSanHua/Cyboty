@@ -1,6 +1,6 @@
 import * as math from "mathjs"
 import * as transformation from "./transformation"
-import {AxisAngle} from "./transformation";
+import {Transformation} from "./transformation";
 
 const spaceStateEnum = {
   JOINT: 0,
@@ -181,15 +181,14 @@ class Plan {
         sFunction = this.#attitudeEuler(a0, a1)
         break
       case attitudeStateEnum.QUATERNION:
-        // TODO: euler to quaternion
-        const q0 = null
-        const q1 = null
+        const q0 = Transformation.rpyToQuaternion(...a0)
+        const q1 = Transformation.rpyToQuaternion(...a1)
         sFunction = this.#attitudeQuaternion(q0, q1)
         break
       case attitudeStateEnum.AXIS_ANGLE:
         // TODO:
-        let axisAngle1 = null
-        let axisAngle2 = null
+        const axisAngle1 = Transformation.rpyToAxisAngle(...a0)
+        const axisAngle2 = Transformation.rpyToAxisAngle(...a1)
         sFunction = this.#attitudeAxisAngle(axisAngle1, axisAngle2)
         break
       default:
@@ -759,8 +758,6 @@ class Plan {
     }
   }
 
-
-
   /**
    * 姿态规划： 欧拉角
    * @param a0
@@ -805,7 +802,12 @@ class Plan {
         k0 = math.sin((1 - s) * theta) / math.sin(theta)
         k1 = math.sin(s * theta) / math.sin(theta)
       }
-      return math.add(math.multiply(k0, q0), math.multiply(k1, q1))
+      const a = Transformation.QuaternionTorpy(math.add(math.multiply(k0, q0), math.multiply(k1, q1)).valueOf())
+      return {
+        a,
+        da: [0, 0, 0],
+        dda: [0, 0, 0]
+      }
     }
 
     return sFunction
@@ -818,7 +820,24 @@ class Plan {
    * @param axisAngle1
    */
   #attitudeAxisAngle = (axisAngle0, axisAngle1) => {
+    const R0 = Transformation.AxisAngleToR(axisAngle0.axis, axisAngle0.theta)
+    const R1 = Transformation.AxisAngleToR(axisAngle1.axis, axisAngle1.theta)
+    const deltaR = math.multiply(Transformation.rotInv(R0), R1)
+    const log3 = Transformation.MatrixLog3(deltaR)
 
+
+    const sFunction = (s, ds, dds) => {
+      console.log(log3)
+      const R = math.multiply(R0, Transformation.MatrixExp3(math.multiply(log3, s)))
+      const a = Transformation.RTorpy(R)
+      return {
+        a,
+        da: [0, 0, 0],
+        dda: [0, 0, 0]
+      }
+    }
+
+    return sFunction
   }
 }
 

@@ -55,7 +55,7 @@
       <div class="text-h6 my-2">四元数</div>
       <v-row>
         <v-col class="v-col-12 v-col-md-3 mx-auto" v-for="(value, index) in 4" :key="index">
-          {{quaternionName[index]}} : {{$filters.toFixed(store.getters.q[index])}}
+          {{quaternionName[index]}} : {{$filters.toFixed(store.getters.quaternion[index])}}
         </v-col>
       </v-row>
 
@@ -66,73 +66,18 @@
           <v-table>
             <tbody>
               <tr v-for="(value, index) in 3">
-                <td>{{$filters.toFixed(store.getters.axisTheta.axis[index])}}</td>
+                <td>{{$filters.toFixed(store.getters.axisAngle.axis[index])}}</td>
               </tr>
             </tbody>
           </v-table>
         </v-col>
         <v-col class="v-col-12 v-col-md-3 d-inline-flex flex-column">
           <div>角度</div>
-          <div class="my-auto" >{{$filters.toFixed(store.getters.axisTheta.theta)}}</div>
+          <div class="my-auto" >{{$filters.toFixed(store.getters.axisAngle.theta)}}</div>
         </v-col>
       </v-row>
       <v-divider />
-
-
-
     </v-container>
-
-    <v-row class="mt-4">
-      <v-col class="position-attitude" md="4" cols="12">
-        <h2>位置</h2>
-        <v-table>
-          <tbody>
-          <tr>
-            <td>Px:</td>
-            <td>{{ $filters.toFixed(store.getters.px) }}</td>
-          </tr>
-          <tr>
-            <td>Py</td>
-            <td>{{ $filters.toFixed(store.getters.py) }}</td>
-          </tr>
-          <tr>
-            <td>Pz:</td>
-            <td>{{ $filters.toFixed(store.getters.pz) }}</td>
-          </tr>
-          </tbody>
-        </v-table>
-      </v-col>
-      <v-col class="position-attitude" md="4" cols="12">
-        <h2>欧拉角</h2>
-        <v-table>
-          <tbody>
-          <tr>
-            <td>roll:</td>
-            <td>{{ $filters.toFixed(store.getters.roll) }}</td>
-          </tr>
-          <tr>
-            <td>pitch:</td>
-            <td>{{ $filters.toFixed(store.getters.pitch) }}</td>
-          </tr>
-          <tr>
-            <td>yaw:</td>
-            <td>{{ $filters.toFixed(store.getters.yaw) }}</td>
-          </tr>
-          </tbody>
-        </v-table>
-      </v-col>
-      <v-col class="position-attitude" md="4" cols="12">
-        <h2>变换矩阵</h2>
-        <v-table>
-          <tbody>
-          <tr v-for="i in 3">
-            <td v-for="j in 3">{{ $filters.toFixed(store.getters.T.get([i - 1, j - 1])) }}</td>
-          </tr>
-          </tbody>
-        </v-table>
-      </v-col>
-    </v-row>
-
   </v-card>
 </template>
 
@@ -147,8 +92,6 @@ const descartesName = reactive([
 const quaternionName = reactive([
   "w", "x", "y", "z"
 ])
-
-console.log(store.getters.axisTheta)
 
 </script>
 

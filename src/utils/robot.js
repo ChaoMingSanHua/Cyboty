@@ -1,5 +1,5 @@
 import * as math from "mathjs"
-import * as transformation from "./transformation"
+import {Transformation} from "./transformation"
 
 const RobotTypeEnum = {
   INDUSTRY: 0,
@@ -143,7 +143,7 @@ class Robot {
     const Pz = pz - this.#Ds[5] * az - this.#Ds[0]
 
     let theta1_1, theta1_2
-    if (transformation.nearZero(Math.pow(Px, 2) + Math.pow(Py, 2))) {
+    if (Transformation.nearZero(Math.pow(Px, 2) + Math.pow(Py, 2))) {
       theta1_1 = 0
       theta1_2 = 0
     } else {
@@ -207,7 +207,7 @@ class Robot {
       const theta5_2 = -theta5_1
       Theta5.push(theta5_1)
       Theta5.push(theta5_2)
-      if (transformation.nearZero(theta5_1)) {
+      if (Transformation.nearZero(theta5_1)) {
         for (let j = 0; j < 2; j++) {
           Theta4.push(0)
           Theta6.push(0)
@@ -249,7 +249,7 @@ class Robot {
         const Pz = pz - this.#Ds[5] * az - this.#Ds[0]
 
         // let theta1_1, theta1_2, theta1, theta2, theta3, theta4, theta5, theta6
-        if (transformation.nearZero(transformation.norm([Px, Py]))) {
+        if (Transformation.nearZero(Transformation.norm([Px, Py]))) {
           theta1_1 = q[0]
           theta1_2 = q[0]
         } else {
@@ -294,7 +294,7 @@ class Robot {
         theta5_1 = Math.acos(-T36.get([1, 2]))
         theta5_2 = - theta5_1
 
-        if (transformation.nearZero(theta5_1)) {
+        if (Transformation.nearZero(theta5_1)) {
           theta4 = q[3]
           theta6 = q[5]
         } else {
@@ -428,7 +428,7 @@ class Robot {
           return []
         }
 
-        if (transformation.nearZero(transformation.norm([Px, Py]))) {   // overhead singularity
+        if (Transformation.nearZero(Transformation.norm([Px, Py]))) {   // overhead singularity
           theta1 = theta0[0]
         } else {
           switch (this.#jConfig.overhead) {
@@ -459,7 +459,6 @@ class Robot {
             return []
         }
 
-
         const g = Math.cos(theta1) * Px + Math.sin(theta1) * Py - this.#As[1]
         const e = this.#As[3] * Math.cos(theta3) + this.#Ds[3] * Math.sin(theta3) + this.#As[2]
         const f = this.#As[3] * Math.sin(theta3) - this.#Ds[3] * Math.cos(theta3)
@@ -487,7 +486,7 @@ class Robot {
             return []
         }
 
-        if (transformation.nearZero(Math.sin(theta5))) {
+        if (Transformation.nearZero(Math.sin(theta5))) {
           // wrist singularity
           theta4 = theta0[3]
           theta6 = theta0[5]
@@ -515,7 +514,7 @@ class Robot {
         if (theta1Condition < 0) {
           return []
         }
-        if (transformation.nearZero(transformation.norm([m, n]))) {
+        if (Transformation.nearZero(Transformation.norm([m, n]))) {
           theta1 = theta0[0] // overhead singularity
         } else {
           switch (this.#jConfig.overhead) {
@@ -548,7 +547,7 @@ class Robot {
         // solve theta6
         const m1 = - nx * Math.sin(theta1) + ny * Math.cos(theta1)
         const n1 = - ox * Math.sin(theta1) + oy * Math.cos(theta1)
-        if (transformation.nearZero(Math.sin(theta5))) {
+        if (Transformation.nearZero(Math.sin(theta5))) {
           // return []   // wrist singularity
           theta6 = theta0[5]
         } else {
@@ -728,7 +727,7 @@ class Robot {
     const dJ = this.getDJacobian(qs, dqs)
 
     const T = this.fKine(qs)
-    const xs = transformation.Tr2xyzrpy(T)
+    const xs = Transformation.TransToX(T)
     const dxs = math.multiply(J, dqs).valueOf()
     const ddxs = math.add(math.multiply(J, ddqs), math.multiply(dJ, dqs)).valueOf()
     return {
@@ -739,7 +738,7 @@ class Robot {
   }
 
   getJointViaDescartes = (xs, dxs, ddxs, q0) => {
-    const T = transformation.xyzrpy2Tr(xs)
+    const T = Transformation.XToTrans(xs)
     // const qs = this.iKine6s(T, q0)
     const qs = this.iKineJConfig(T, q0)
     const J = this.getJacobian(qs)

@@ -155,25 +155,54 @@
     <v-divider/>
     <!-- 姿态规划 -->
     <template v-if="spaceStateEnum.DESCARTES === trajectoryPara.spaceState">
-      <v-row class="my-4 text-center">
-        <v-col class="v-col-12">
+      <v-container class="my-4 text-center">
+        <v-row justify="center">
           <div class="text-h5">姿态规划</div>
-        </v-col>
-        <v-col class="v-col-4">
-          <input class="" type="radio" name="attitudeState" :value="0" v-model="trajectoryPara.attitudeState"/> 欧拉角
-        </v-col>
-        <v-col class="v-col-4">
-          <input class="" type="radio" name="attitudeState" :value="1" v-model="trajectoryPara.attitudeState"/> 四元数
-        </v-col>
-        <v-col class="v-col-4">
-          <input class="" type="radio" name="attitudeState" :value="2" v-model="trajectoryPara.attitudeState"/> 轴角
-        </v-col>
+        </v-row>
 
-        <v-col class="v-col-4" v-for="(value, index) of trajectoryPara.x1.slice(3, 6)">
-          {{ descartesName[index + 3] }}: <input class="ml-4 input-number" type="number"
-                                                 v-fixed="{obj: trajectoryPara, key: 'x1', index: index+3}"/> (rad)
-        </v-col>
-      </v-row>
+        <v-row justify="center">
+          <v-col class="v-col-12 v-col-md-4">
+            <input class="" type="radio" name="attitudeState" :value="0" v-model="trajectoryPara.attitudeState"/> 欧拉角
+          </v-col>
+          <v-col class="v-col-12 v-col-md-4">
+            <input class="" type="radio" name="attitudeState" :value="1" v-model="trajectoryPara.attitudeState"/> 四元数
+          </v-col>
+          <v-col class="v-col-12 v-col-md-4">
+            <input class="" type="radio" name="attitudeState" :value="2" v-model="trajectoryPara.attitudeState"/> 轴角
+          </v-col>
+        </v-row>
+        <v-row justify="center">
+          <v-col class="v-col-12 v-col-md-4" v-for="(value, index) of trajectoryPara.x1.slice(3, 6)">
+            {{ descartesName[index + 3] }}: <input class="ml-4 input-number" type="number"
+                                                   v-fixed="{obj: trajectoryPara, key: 'x1', index: index + 3}"/> (rad)
+          </v-col>
+        </v-row>
+        <template v-if="attitudeStateEnum.QUATERNION === trajectoryPara.attitudeState">
+          <v-row>
+            <v-col class="v-col-12 v-col-md-3" v-for="(value, index) in 4">
+              q{{index}}: <input class="ml-4 input-number" type="number" disabled :value="$filters.toFixed(trajectoryPara.quaternion[index])"/>
+            </v-col>
+          </v-row>
+        </template>
+        <template v-else-if="attitudeStateEnum.AXIS_ANGLE === trajectoryPara.attitudeState">
+          <v-row justify="space-around">
+            <v-col class="v-col-12 v-col-md-3">
+              <div>轴线</div>
+              <v-table>
+                <tbody>
+                <tr v-for="(value, index) in 3">
+                  <td>{{$filters.toFixed(trajectoryPara.axisAngle.axis[index])}}</td>
+                </tr>
+                </tbody>
+              </v-table>
+            </v-col>
+            <v-col class="v-col-12 v-col-md-3 d-inline-flex flex-column">
+              <div>角度</div>
+              <div class="my-auto" >{{$filters.toFixed(trajectoryPara.axisAngle.theta)}}</div>
+            </v-col>
+          </v-row>
+        </template>
+      </v-container>
       <v-divider/>
     </template>
     <v-btn @click="trajectoryPlan" class="mx-auto my-4 d-block text-h7 font-weight-black">规划</v-btn>
@@ -200,6 +229,7 @@
 import {computed, onMounted, reactive, ref, watch} from "vue";
 import {useStore} from "vuex";
 import {robot} from "@/utils/robot"
+import {Transformation} from "@/utils/transformation";
 import * as echarts from "echarts"
 import {spaceStateEnum, velStateEnum, jointStateEnum, pathStateEnum, attitudeStateEnum, Plan} from "@/utils/plan";
 
@@ -245,9 +275,11 @@ const trajectoryPara = reactive({
   xc: [...store.getters.X], // 圆弧中心点/中间点
   pointNum: 1,
   points: [[...store.getters.X.slice(0, 3)]],
-  // points1: [0.4690, 0.1789, 0.9450],
-  // points2: [0.5190, 0.2289, 0.9450],
-  // points3: [0.6, 0.7, 0.8]
+  quaternion: [...store.getters.quaternion],
+  axisAngle: {
+    axis: [...store.getters.axisAngle.axis],
+    theta: store.getters.axisAngle.theta
+  }
 })
 
 const jointName = reactive([
@@ -284,6 +316,18 @@ watch(() => trajectoryPara.pointNum, (newValue, oldValue) => {
     }
   }
 })
+
+watch(() => [...trajectoryPara.x1.slice(3, 6)], ((newValue, oldValue) => {
+  Transformation.rpyToQuaternion(...newValue).forEach((value, index) => {
+    trajectoryPara.quaternion[index] = value
+  })
+
+  const axisAngle = Transformation.rpyToAxisAngle(...newValue)
+  trajectoryPara.axisAngle.theta = axisAngle.theta
+  axisAngle.axis.forEach((value, index) => {
+    trajectoryPara.axisAngle.axis[index] = value
+  })
+}))
 
 let dt = 0.1
 let timer = null;

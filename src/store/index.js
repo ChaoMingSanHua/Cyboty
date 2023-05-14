@@ -1,7 +1,7 @@
 import {createStore} from "vuex";
 import createPersistedState from "vuex-persistedstate"
 import * as math from "mathjs"
-import * as transformation from "@/utils/transformation";
+import {Transformation} from "@/utils/transformation";
 import {robot} from "@/utils/robot";
 
 export default createStore({
@@ -33,35 +33,43 @@ export default createStore({
     T: (state) => {
       return robot.fKine([...state.Q])
     },
-    px: ((state, getters) => {
-      return getters.T.get([0, 3])
-    }),
-    py: ((state, getters) => {
-      return getters.T.get([1, 3])
-    }),
-    pz: ((state, getters) => {
-      return getters.T.get([2, 3])
-    }),
-    roll: ((state, getters) => {
-      return transformation.R2rpy(getters.T)[0]
-    }),
-    pitch: ((state, getters) => {
-      return transformation.R2rpy(getters.T)[1]
-    }),
-    yaw: ((state, getters) => {
-      return transformation.R2rpy(getters.T)[2]
-    }),
     X: ((state, getters) => {
-      return [getters.px, getters.py, getters.pz, getters.roll, getters.pitch, getters.yaw]
+      // return [getters.px, getters.py, getters.pz, getters.roll, getters.pitch, getters.yaw]
+      return Transformation.TransToX(getters.T)
     }),
+    // px: ((state, getters) => {
+    //   // return getters.T.get([0, 3])
+    //   return getters.X[0]
+    // }),
+    // py: ((state, getters) => {
+    //   // return getters.T.get([1, 3])
+    //   return getters.X[1]
+    // }),
+    // pz: ((state, getters) => {
+    //   // return getters.T.get([2, 3])
+    //   return getters.X[2]
+    // }),
+    // roll: ((state, getters) => {
+    //   // return Transformation.RTorpy(getters.T)[0]
+    //   return getters.X[3]
+    // }),
+    // pitch: ((state, getters) => {
+    //   // return Transformation.RTorpy(getters.T)[1]
+    //   return getters.X[4]
+    // }),
+    // yaw: ((state, getters) => {
+    //   // return Transformation.RTorpy(getters.T)[2]
+    //   return getters.X[5]
+    // }),
     R: ((state, getters) => {
-      return getters.T.subset(math.index(math.range(0, 3), math.range(0, 3)))
+      // return getters.T.subset(math.index(math.range(0, 3), math.range(0, 3)))
+      return Transformation.TransToRp(getters.T).R
     }),
-    q: ((state, getters) => {
-      return transformation.Transformation.RToQuaternion(getters.R)
+    quaternion: ((state, getters) => {
+      return Transformation.RToQuaternion(getters.R)
     }),
-    axisTheta: ((state, getters) => {
-      return transformation.Transformation.RToAxisAngle(getters.R)
+    axisAngle: ((state, getters) => {
+      return Transformation.RToAxisAngle(getters.R)
     }),
   },
   mutations: {
