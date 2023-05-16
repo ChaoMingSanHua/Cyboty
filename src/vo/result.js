@@ -30,11 +30,15 @@ class Result {
   }
 
   static ok = () => {
-    const result = this.restResult(true, null, StatusCodeEnum.SUCCESS.code, StatusCodeEnum.SUCCESS.desc)
+    return this.restResult(true, null, StatusCodeEnum.SUCCESS.code, StatusCodeEnum.SUCCESS.desc)
   }
 
   static okData = (data) => {
-    const result = this.restResult(true, null, StatusCodeEnum.SUCCESS.code, StatusCodeEnum.SUCCESS.desc)
+    return this.restResult(true, data, StatusCodeEnum.SUCCESS.code, StatusCodeEnum.SUCCESS.desc)
+  }
+
+  static fail = (status) => {
+    return this.restResult(false, null, status.code, status.desc)
   }
 
   static restResult = (flag, data, code, message) => {
