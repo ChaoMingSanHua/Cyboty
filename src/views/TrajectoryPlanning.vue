@@ -223,6 +223,7 @@
       </v-col>
     </v-row>
   </v-card>
+  <ErrorDialog :title="errorTitle" v-model:dialog="errorDialog" />
 </template>
 
 <script setup>
@@ -232,8 +233,13 @@ import {robot} from "@/utils/robot"
 import {Transformation} from "@/utils/transformation";
 import * as echarts from "echarts"
 import {spaceStateEnum, velStateEnum, jointStateEnum, pathStateEnum, attitudeStateEnum, Plan} from "@/utils/plan";
+import {RobotService} from "@/services/robotService";
+import ErrorDialog from "@/components/dialog/ErrorDialog"
 
 const store = useStore()
+
+const errorDialog = ref(false)
+const errorTitle = ref("")
 
 const jointPosition = ref()
 const descartesPosition = ref()
@@ -368,8 +374,10 @@ const trajectoryPlan = async () => {
     await readMotionFile()
     tf = (jointsArray.length - 1) * dt
   } else {
-    var plan = new Plan(trajectoryPara)
-    tf = plan.getTf
+    // var plan = new Plan(trajectoryPara)
+    // tf = plan.getTf
+    var robotService = new RobotService(trajectoryPara)
+    tf = robotService.getTf()
   }
 
   if (timer) {
@@ -379,7 +387,7 @@ const trajectoryPlan = async () => {
   let t = 0
   let dqLast = [0, 0, 0, 0, 0, 0]
   const planning = () => new Promise(resolve => {
-    timer = setInterval(() => {
+    timer = setInterval(async () => {
       if ((t > tf) || (Math.abs(t - tf) < 1e-6)) {
         clearInterval(timer)
         setTimeout(() => {
@@ -396,8 +404,24 @@ const trajectoryPlan = async () => {
         case spaceStateEnum.JOINT:
           switch (trajectoryPara.jointState) {
             case jointStateEnum.LINE:
-              const {q, dq, ddq} = plan.getTrajectory(t)
-              const {dxs, ddxs} = robot.getDescartesViaJoint(q, dq, ddq)
+              const resultJointLine = robotService.getStateViaJoint(t)
+              if (!resultJointLine.flag) {
+                if (timer) {
+                  clearInterval(timer)
+                }
+                const stop = () => new Promise(resolve2 => {
+                  setTimeout(() => {
+                    // timeStart.value += t - dt
+                    resolve2()
+                  }, dt * 1000)
+                })
+                await stop()
+                resolve()
+                errorTitle.value = resultJointLine.message
+                errorDialog.value = true
+                return
+              }
+              const {q, dq, ddq, dxs, ddxs} = resultJointLine.data
               store.commit("setQ", q)
               for (let i = 0; i < 6; i++) {
                 dqNow.push(dq[i])
@@ -428,8 +452,26 @@ const trajectoryPlan = async () => {
           }
           break
         case spaceStateEnum.DESCARTES:
-          const {x, dx, ddx} = plan.getTrajectory(t)
-          const {qs, dqs, ddqs} = robot.getJointViaDescartes(x, dx, ddx, store.state.Q)
+          const resultDescartes = robotService.getStateViaDescartes(t, [...store.state.Q])
+          if (!resultDescartes.flag) {
+            console.log("求解失败")
+            console.log(resultDescartes.message)
+            if (timer) {
+              clearInterval(timer)
+            }
+            const stop = () => new Promise(resolves2 => {
+              setTimeout(() => {
+                // timeStart.value += t - dt
+                resolves2()
+              }, dt * 1000)
+            })
+            await stop()
+            resolve()
+            errorTitle.value = resultDescartes.message
+            errorDialog.value = true
+            return
+          }
+          const {x, dx, ddx, qs, dqs, ddqs} = resultDescartes.data
           store.commit('setQ', qs)
           for (let i = 0; i < 6; i++) {
             dqNow.push(dqs[i])

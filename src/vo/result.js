@@ -2,31 +2,31 @@ import {StatusCodeEnum} from "@/enums/status_code_enum";
 
 class Result {
 
-  #flag
+  flag
 
-  #data
+  data
 
-  #code
+  code
 
-  #message
+  message
 
   constructor() {
   }
 
   set setFlag (flag) {
-    this.#flag = flag
+    this.flag = flag
   }
 
   set setData (data) {
-    this.#data = data
+    this.data = data
   }
 
   set setCode (code) {
-    this.#code = code
+    this.code = code
   }
 
   set setMessage (message) {
-    this.#message = message
+    this.message = message
   }
 
   static ok = () => {

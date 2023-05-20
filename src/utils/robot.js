@@ -740,14 +740,21 @@ class Robot {
   getJointViaDescartes = (xs, dxs, ddxs, q0) => {
     const T = Transformation.XToTrans(xs)
     // const qs = this.iKine6s(T, q0)
+    let J = null, dqs = null, ddqs = null, JDet = 0
     const qs = this.iKineJConfig(T, q0)
-    const J = this.getJacobian(qs)
-    const dqs = math.multiply(math.inv(J), dxs).valueOf()
-    const ddqs = math.multiply(math.inv(J), math.subtract(ddxs, math.multiply(J, dqs))).valueOf()
+    if (qs.length) {
+      J = this.getJacobian(qs)
+      JDet = math.sqrt(math.abs(math.det(math.multiply(J, math.transpose(J)))))
+      if (!Transformation.nearZero(JDet)) {
+        dqs = math.multiply(math.inv(J), dxs).valueOf()
+        ddqs = math.multiply(math.inv(J), math.subtract(ddxs, math.multiply(J, dqs))).valueOf()
+      }
+    }
     return {
       qs,
       dqs,
-      ddqs
+      ddqs,
+      JDet
     }
   }
 
