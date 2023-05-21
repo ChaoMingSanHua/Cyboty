@@ -69,7 +69,7 @@
       </template>
     </v-row>
     <v-divider/>
-    <!--   路径规划   -->
+    <!-- 路径规划 -->
     <v-row class="my-4 text-center">
       <v-col class="v-col-12">
         <div class="text-h5">路径规划</div>
@@ -339,13 +339,13 @@ let dt = 0.1
 let timer = null;
 const trajectoryPlan = async () => {
   if (timeArray.length) {
-    timeArray.pop()
-    qNowArray.pop()
-    xNowArray.pop()
-    dqNowArray.pop()
-    dxNowArray.pop()
-    ddqNowArray.pop()
-    ddxNowArray.pop()
+    var timeLast = timeArray.pop()
+    var qNowLast = qNowArray.pop()
+    var xNowLast =  xNowArray.pop()
+    var dqNowLast = dqNowArray.pop()
+    var dxNowLast = dxNowArray.pop()
+    var ddqNowLast = ddqNowArray.pop()
+    var ddxNowLast = ddxNowArray.pop()
   }
 
   let tf = 0
@@ -374,8 +374,6 @@ const trajectoryPlan = async () => {
     await readMotionFile()
     tf = (jointsArray.length - 1) * dt
   } else {
-    // var plan = new Plan(trajectoryPara)
-    // tf = plan.getTf
     var robotService = new RobotService(trajectoryPara)
     tf = robotService.getTf()
   }
@@ -409,13 +407,19 @@ const trajectoryPlan = async () => {
                 if (timer) {
                   clearInterval(timer)
                 }
-                const stop = () => new Promise(resolve2 => {
-                  setTimeout(() => {
-                    // timeStart.value += t - dt
-                    resolve2()
-                  }, dt * 1000)
-                })
-                await stop()
+
+                // t = 0说明没有运动，但每次规划会pop最后一个，如果没有运动要把最后一个补回来
+                if (t <= 0) {
+                  timeArray.push(timeLast)
+                  qNowArray.push(qNowLast)
+                  xNowArray.push(xNowLast)
+                  dqNowArray.push(dqNowLast)
+                  dxNowArray.push(dxNowLast)
+                  ddqNowArray.push(ddqNowLast)
+                  ddxNowArray.push(ddxNowLast)
+                } else {
+                  timeStart.value += t - dt
+                }
                 resolve()
                 errorTitle.value = resultJointLine.message
                 errorDialog.value = true
@@ -459,13 +463,19 @@ const trajectoryPlan = async () => {
             if (timer) {
               clearInterval(timer)
             }
-            const stop = () => new Promise(resolves2 => {
-              setTimeout(() => {
-                // timeStart.value += t - dt
-                resolves2()
-              }, dt * 1000)
-            })
-            await stop()
+
+            // t = 0说明没有运动，但每次规划会pop最后一个，如果没有运动要把最后一个补回来
+            if (t <= 0) {
+              timeArray.push(timeLast)
+              qNowArray.push(qNowLast)
+              xNowArray.push(xNowLast)
+              dqNowArray.push(dqNowLast)
+              dxNowArray.push(dxNowLast)
+              ddqNowArray.push(ddqNowLast)
+              ddxNowArray.push(ddxNowLast)
+            } else {
+              timeStart.value += t - dt
+            }
             resolve()
             errorTitle.value = resultDescartes.message
             errorDialog.value = true
