@@ -223,7 +223,7 @@
       </v-col>
     </v-row>
   </v-card>
-  <ErrorDialog :title="errorTitle" v-model:dialog="errorDialog" />
+  <ErrorDialog :message="errorMessage" v-model:dialog="errorDialog" />
 </template>
 
 <script setup>
@@ -239,7 +239,10 @@ import ErrorDialog from "@/components/dialog/ErrorDialog"
 const store = useStore()
 
 const errorDialog = ref(false)
-const errorTitle = ref("")
+const errorMessage = reactive({
+  title: "",
+  text: ""
+})
 
 const jointPosition = ref()
 const descartesPosition = ref()
@@ -421,7 +424,8 @@ const trajectoryPlan = async () => {
                   timeStart.value += t - dt
                 }
                 resolve()
-                errorTitle.value = resultJointLine.message
+                errorMessage.title = resultJointLine.message.title
+                errorMessage.text = resultJointLine.message.text
                 errorDialog.value = true
                 return
               }
@@ -477,7 +481,8 @@ const trajectoryPlan = async () => {
               timeStart.value += t - dt
             }
             resolve()
-            errorTitle.value = resultDescartes.message
+            errorMessage.title = resultDescartes.message.title
+            errorMessage.text = resultDescartes.message.text
             errorDialog.value = true
             return
           }

@@ -1,17 +1,26 @@
 const StatusCodeEnum = {
   SUCCESS: {
     code: 20000,
-    desc: "操作成功"
+    desc: {
+      title: "操作成功",
+      text: ""
+    },
   },
 
   SINGULARITY: {
     code: 30001,
-    desc: "接近奇异点"
+    desc: {
+      title: "接近奇异点",
+      text: "运行关节运动远离奇异点"
+    }
   },
 
   OUT_OF_WORKSPACE: {
     code: 30002,
-    desc: "超出工作空间"
+    desc: {
+      title: "超出工作空间",
+      text: "减小运动范围"
+    }
   }
 }
 

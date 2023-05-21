@@ -3,21 +3,23 @@
     <v-dialog
       :modelValue="dialog"
       persistent
-      width="auto"
+      width="40%"
+      class="text-center"
     >
       <v-card>
         <v-card-title class="text-h5">
-          {{title}}
+          {{message.title}}
         </v-card-title>
         <v-card-text>
-          {{text}}
+          {{message.text}}
         </v-card-text>
         <v-card-actions>
-          <v-spacer/>
           <v-btn
+            class="mx-auto"
             color="green-darken-1"
             variant="text"
-            @click="confirm">
+            @click="confirm"
+          >
             确认
           </v-btn>
         </v-card-actions>
@@ -34,16 +36,11 @@ const props = defineProps({
     default: false,
     required: true
   },
-  title: {
-    type: String,
-    default: '',
+  message: {
+    type: Object,
+    default: null,
     required: true
   },
-  text: {
-    type: String,
-    default: '',
-    required: false
-  }
 })
 
 const emit = defineEmits(['update:dialog'])

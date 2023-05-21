@@ -7,6 +7,7 @@ class RobotService {
 
   #plan
 
+  // TODO: Cybaster / 20230521 / 增加规划失败的判断 (圆弧、多点)
   constructor(trajectoryPara) {
     this.#plan = new Plan(trajectoryPara)
   }
