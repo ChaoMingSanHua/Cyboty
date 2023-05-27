@@ -1,6 +1,7 @@
 import * as math from "mathjs"
-import * as transformation from "./transformation"
 import {Transformation} from "./transformation";
+import { BizException } from '@/exception/biz_exception';
+import { StatusCodeEnum } from '@/enums/status_code_enum';
 
 const spaceStateEnum = {
   JOINT: 0,
@@ -406,10 +407,17 @@ class Plan {
     const normPcP0 = math.norm(math.squeeze(vecPcP0))
     const normPcP1 = math.norm(math.squeeze(vecPcP1))
     const radius = math.norm(math.squeeze(vecPcP0))
+    if (Transformation.nearZero(normPcP0) || Transformation.nearZero(normPcP1)) {
+      throw new BizException(StatusCodeEnum.ARC_CENTER_ERROR)
+    }
     const theta = math.acos(math.dot(vecPcP0, vecPcP1) / (normPcP0 * normPcP1))
     let vecCx = math.divide(vecPcP0, normPcP0)
     let vecCz = math.cross(vecPcP0, vecPcP1)
-    vecCz = math.divide(vecCz, math.norm(math.squeeze(vecCz)))
+    const normVecCz = math.norm(math.squeeze(vecCz))
+    if (Transformation.nearZero(normVecCz)) {
+      throw new BizException(StatusCodeEnum.ARC_CENTER_ERROR)
+    }
+    vecCz = math.divide(vecCz, normVecCz)
     let vecCy = math.cross(vecCz, vecCx)
     vecCx = math.reshape(vecCx, [3, 1])
     vecCy = math.reshape(vecCy, [3, 1])
@@ -477,6 +485,10 @@ class Plan {
       [-D2],
       [-D3]
     ])
+
+    if(Transformation.nearZero(math.det(M))) {
+      throw new BizException(StatusCodeEnum.ARC_POINT_ERROR)
+    }
 
     // 圆心和半径
     const c = math.multiply(math.pinv(M), B)

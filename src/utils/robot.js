@@ -1,5 +1,7 @@
+import { BizException } from "@/exception/biz_exception"
 import * as math from "mathjs"
 import {Transformation} from "./transformation"
+import { StatusCodeEnum } from '@/enums/status_code_enum';
 
 const RobotTypeEnum = {
   INDUSTRY: 0,
@@ -425,11 +427,14 @@ class Robot {
         // solve theta1
         theta1Condition = Math.pow(Px, 2) +  Math.pow(Py, 2) - Math.pow(this.#Ds[2], 2)
         if (theta1Condition < 0) {
+          throw new BizException(StatusCodeEnum.OUT_OF_WORKSPACE)
           return []
         }
 
         if (Transformation.nearZero(Transformation.norm([Px, Py]))) {   // overhead singularity
           theta1 = theta0[0]
+          throw new BizException(StatusCodeEnum.SINGULARITY)
+          return []
         } else {
           switch (this.#jConfig.overhead) {
             case OverheadEnum.FRONT:
@@ -446,8 +451,13 @@ class Robot {
         let k3 = (Math.pow(this.#As[1] - Math.cos(theta1) * Px - Math.sin(theta1) * Py, 2) + Math.pow(Pz, 2) - (Math.pow(this.#As[3], 2) + Math.pow(this.#Ds[3], 2) + Math.pow(this.#As[2], 2))) / (2 * this.#As[2])
         theta3Condition = Math.pow(this.#As[3], 2) + Math.pow(this.#Ds[3], 2) - Math.pow(k3, 2)
         if (theta3Condition < 0) {
+          throw new BizException(StatusCodeEnum.OUT_OF_WORKSPACE)
           return []   // inline singularity
+        } else if (Transformation.nearZero(theta3Condition)) {
+          throw new BizException(StatusCodeEnum.SINGULARITY)
+          return []
         }
+
         switch (this.#jConfig.inline) {
           case InlineEnum.UP:
             theta3 = Math.atan2(k3, Math.sqrt(theta3Condition)) - Math.atan2(this.#As[3], this.#Ds[3])
@@ -490,6 +500,8 @@ class Robot {
           // wrist singularity
           theta4 = theta0[3]
           theta6 = theta0[5]
+          throw new BizException(StatusCodeEnum.SINGULARITY)
+          return []
         } else {
           theta4 = Math.atan2(T36.get([2, 2]) / Math.sin(theta5), T36.get([0, 2]) / Math.sin(theta5))
           theta6 = Math.atan2(-T36.get([1, 1]) / Math.sin(theta5), T36.get([1, 0]) / Math.sin(theta5))
@@ -737,6 +749,14 @@ class Robot {
     }
   }
 
+  /**
+   * 获取关节信息
+   * @param {*} xs
+   * @param {*} dxs
+   * @param {*} ddxs
+   * @param {*} q0
+   * @returns
+   */
   getJointViaDescartes = (xs, dxs, ddxs, q0) => {
     const T = Transformation.XToTrans(xs)
     // const qs = this.iKine6s(T, q0)

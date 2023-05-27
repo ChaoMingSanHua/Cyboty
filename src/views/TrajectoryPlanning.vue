@@ -222,6 +222,20 @@
         <div ref="descartesAcceleration" style="width: 100%; height: 300px"/>
       </v-col>
     </v-row>
+    <v-divider />
+    <v-row class="my-4 text-center" justify="center">
+      <div class="text-h5">路径</div>
+    </v-row>
+    <v-row class="my-4" justify="center">
+      <v-col class="v-col-12 v-col-md-6">
+        <div ref="xzPath" style="width: 100%; height: 300px;" />
+        <div ref="xyPath" style="width: 100%; height: 300px;" />
+      </v-col>
+      <v-col class="v-col-12 v-col-md-6">
+        <div ref="yzPath" style="width: 100%; height: 300px;" />
+        <div ref="xyzPath" style="width: 100%; height: 300px;" />
+      </v-col>
+    </v-row>
   </v-card>
   <ErrorDialog :message="errorMessage" v-model:dialog="errorDialog" />
 </template>
@@ -232,6 +246,7 @@ import {useStore} from "vuex";
 import {robot} from "@/utils/robot"
 import {Transformation} from "@/utils/transformation";
 import * as echarts from "echarts"
+import 'echarts-gl'
 import {spaceStateEnum, velStateEnum, jointStateEnum, pathStateEnum, attitudeStateEnum, Plan} from "@/utils/plan";
 import {RobotService} from "@/services/robotService";
 import ErrorDialog from "@/components/dialog/ErrorDialog"
@@ -251,6 +266,11 @@ const descartesVelocity = ref()
 const jointAcceleration = ref()
 const descartesAcceleration = ref()
 
+const xzPath = ref()
+const xyPath = ref()
+const yzPath = ref()
+const xyzPath = ref()
+
 const timeArray = reactive([])
 const timeStart = ref(0)
 const fileInput = ref()
@@ -260,6 +280,11 @@ let jointVelocityChart = null
 let descartesVelocityChart = null
 let jointAccelerationChart = null
 let descartesAccelerationChart = null
+
+let xzPathChart = null
+let xyPathChart = null
+let yzPathChart = null
+let xyzPathChart = null
 
 const qNowArray = []
 const dqNowArray = []
@@ -377,7 +402,23 @@ const trajectoryPlan = async () => {
     await readMotionFile()
     tf = (jointsArray.length - 1) * dt
   } else {
-    var robotService = new RobotService(trajectoryPara)
+    // var robotService = new RobotService(trajectoryPara)
+    var robotService = new RobotService()
+    const planResult = robotService.planTrajectory(trajectoryPara)
+    if (!planResult.flag) {
+      timeArray.push(timeLast)
+      qNowArray.push(qNowLast)
+      xNowArray.push(xNowLast)
+      dqNowArray.push(dqNowLast)
+      dxNowArray.push(dxNowLast)
+      ddqNowArray.push(ddqNowLast)
+      ddxNowArray.push(ddxNowLast)
+
+      errorMessage.title = planResult.message.title
+      errorMessage.text = planResult.message.text
+      errorDialog.value = true
+      return
+    }
     tf = robotService.getTf()
   }
 
@@ -530,6 +571,8 @@ const trajectoryPlan = async () => {
   renderDescartesVelocity()
   renderJointAcceleration()
   renderDescartesAcceleration()
+
+  renderPath()
 }
 
 const initChart = () => {
@@ -607,8 +650,136 @@ const initChart = () => {
   descartesAccelerationChart.setOption(titleOptions[5])
 }
 
+const initPathChart = () => {
+  xzPathChart = echarts.init(xzPath.value)
+  xyPathChart = echarts.init(xyPath.value)
+  yzPathChart = echarts.init(yzPath.value)
+  xyzPathChart = echarts.init(xyzPath.value)
+
+  const initOption = {
+    animation: true,
+    grid: {
+      left: "3%",
+      top: "35%",
+      right: "4%",
+      bottom: "10%",
+      containLabel: true
+    },
+    tooltip: {
+      trigger: "axis",
+      valueFormatter: (value) => value.toFixed(3)
+    },
+    legend: {
+      left: 20,
+      top: "15%",
+      icon: "circle"
+    },
+    xAxis: {
+      // type: "category",
+      // type: "value",
+      axisLabel: {
+        formatter: (value) => {
+          return parseFloat(value).toFixed(3)
+        }
+      },
+      boundaryGap: false,
+      nameLocation: 'center',
+      nameTextStyle: {
+        fontSize: 15
+      },
+      nameGap: 30
+    },
+    yAxis: {
+      // type: "value",
+      axisLabel: {
+        formatter: (value) => {
+          return value.toFixed(3)
+        }
+      },
+      nameLocation: 'center',
+      nameTextStyle: {
+        fontSize: 15
+      },
+      nameGap: 30
+    },
+    series: {
+      type: "line",
+      showSymbol: false,
+      clip: true,
+    },
+    title: {
+      left: "center",
+      top: "5%"
+    }
+  }
+
+  const initOption3D = {
+    animation: true,
+    grid3D: {},
+    xAxis3D: {
+      name: "x(m)",
+      nameLocation: "center",
+      nameTextStyle: {
+        fontSize: 15
+      }
+    },
+    yAxis3D: {
+      name: "y(m)",
+      nameLocation: "center",
+      nameTextStyle: {
+        fontSize: 15
+      }
+    },
+    zAxis3D: {
+      name: "z(m)",
+      nameLocation: "center",
+      nameTextStyle: {
+        fontSize: 15
+      }
+    },
+    series: [
+      {
+        type: "line3D",
+        showSymbol: false,
+        clip: true,
+      }
+    ],
+    title: {
+      text: "X-Y-Z",
+      left: "center",
+      top: "5%"
+    }
+  }
+
+  const xAxisNames = ["x(m)", "x(m)", "y(m)"]
+  const yAxisNames = ["z(m)", "y(m)", "y(m)"]
+  const titles = ["X-Z", "X-Y", "Y-Z"]
+  const titleOptions = titles.map((value, index) => {
+    return {
+      xAxis: {
+        name: xAxisNames[index]
+      },
+      yAxis: {
+        name: yAxisNames[index]
+      },
+      title: {
+        text: value
+      }
+    }
+  })
+
+  xzPathChart.setOption(initOption)
+  xyPathChart.setOption(initOption)
+  yzPathChart.setOption(initOption)
+  xyzPathChart.setOption(initOption3D)
+  xzPathChart.setOption(titleOptions[0])
+  xyPathChart.setOption(titleOptions[1])
+  yzPathChart.setOption(titleOptions[2])
+}
+
 onMounted(() => {
   initChart()
+  initPathChart()
 })
 
 const renderJointPosition = () => {
@@ -736,6 +907,48 @@ const renderDescartesAcceleration = () => {
     series
   }
   option && descartesAccelerationChart.setOption(option)
+}
+
+const renderPath = () => {
+  const xz = []
+  const xy = []
+  const yz = []
+  const xyz = []
+  xNowArray.forEach(value => {
+    xz.push([value[0], value[2]])
+    yz.push([value[1], value[2]])
+    xy.push([value[0], value[1]])
+    xyz.push([value[0], value[1], value[2]])
+  })
+
+
+  const optionXZ = {
+    series: {
+      data: xz,
+    },
+  }
+
+  const optionYZ = {
+    series: {
+      data: yz,
+    },
+  }
+
+  const optionXY = {
+    series: {
+      data: xy,
+    },
+  }
+  const optionXYZ = {
+    series: {
+      data: xyz
+    }
+  }
+
+  xzPathChart.setOption(optionXZ)
+  yzPathChart.setOption(optionYZ)
+  xyPathChart.setOption(optionXY)
+  xyzPathChart.setOption(optionXYZ)
 }
 
 </script>
