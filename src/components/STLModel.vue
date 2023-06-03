@@ -32,117 +32,60 @@ const qDelta = reactive({
 
 const store = useStore()
 
-// stlLoader.load('/ER15-1400/meshes/base_link.STL', geometry => {
-//   // console.log(geometry)
-//   const material = new THREE.MeshPhongMaterial({color:0xDDDADA})
-//   link0 = new THREE.Mesh(geometry,material);
-//   link0.translateY(x1.value)
-//   scene.add(link0);
-// })
+const type = "cooperation"
+// const type = "industry"
+const dof = 6
 
-const link0Geometry = await stlLoader.loadAsync('/ER15-1400/meshes/base_link.STL');
+const xmlhttp = new XMLHttpRequest()
+xmlhttp.open("GET", "/" + type + "/urdf/robot.urdf", false)
+xmlhttp.send()
+const xmlDoc = xmlhttp.responseXML
+const robotNode = xmlDoc.getElementsByTagName("robot")[0]
+const linkNodes = robotNode.getElementsByTagName("link")
+const jointNodes = robotNode.getElementsByTagName("joint")
+
+const link0Geometry = await stlLoader.loadAsync("/" + type + "/meshes/link_0.STL");
 const link0Material = new THREE.MeshPhongMaterial({color:0xDDDADA})
 const link0 = new THREE.Mesh(link0Geometry, link0Material);
+link0.position.set(...linkNodes[0].getElementsByTagName("visual")[0].getElementsByTagName("origin")[0].getAttribute("xyz").split(" ").map(Number))
+const link0Euler = new THREE.Euler(...linkNodes[0].getElementsByTagName("visual")[0].getElementsByTagName("origin")[0].getAttribute("rpy").split(" ").map(Number))
+link0.setRotationFromEuler(link0Euler)
 scene.add(link0);
 
-const joint1Geometry = new THREE.CylinderGeometry(0.01, 0.01, 0.5)
-const joint1Material = new THREE.MeshPhongMaterial({color:0xFFFFFF})
-const joint1 = new THREE.Mesh(joint1Geometry, joint1Material)
-joint1.position.set(0.013059, 0.0045, 0.196)
-const joint1Euler = new THREE.Euler(1.5708, 0, 0, 'ZYX')
-joint1.setRotationFromEuler(joint1Euler)
-joint1.material.visible = false
-const joint1RotationAxis = new THREE.Vector3(0, 1, 0)
-link0.add(joint1)
+let parent = link0
+const joints = []
+const jointRotationAxises = []
+for (let i = 0; i < dof; i++) {
+  const jointGeometry = new THREE.CylinderGeometry(0.01, 0.01, 0.5)
+  const jointMaterial = new THREE.MeshPhongMaterial({color:0xFFFFFF})
+  const joint = new THREE.Mesh(jointGeometry, jointMaterial)
+  joint.position.set(...jointNodes[i].getElementsByTagName("origin")[0].getAttribute("xyz").split(" ").map(Number))
+  const jointEuler = new THREE.Euler(...jointNodes[i].getElementsByTagName("origin")[0].getAttribute("rpy").split(" ").map(Number), 'ZYX')
+  joint.setRotationFromEuler(jointEuler)
+  joint.material.visible = false
+  const jointRotationAxis = new THREE.Vector3(...jointNodes[i].getElementsByTagName("axis")[0].getAttribute("xyz").split(" ").map(Number))
+  jointRotationAxises.push(jointRotationAxis)
+  joints.push(joint)
+  parent.add(joint)
 
-const link1Geometry = await stlLoader.loadAsync('/ER15-1400/meshes/link_1.STL');
-const link1Material = new THREE.MeshPhongMaterial({color:0xDDDADA})
-const link1 = new THREE.Mesh(link1Geometry, link1Material);
-joint1.add(link1);
+  const linkGeometry = await stlLoader.loadAsync("/" + type + "/meshes/link_" + (i + 1) + ".STL");
+  const linkMaterial = new THREE.MeshPhongMaterial({color:0xDDDADA})
+  const link = new THREE.Mesh(linkGeometry, linkMaterial);
+  link.position.set(...linkNodes[i + 1].getElementsByTagName("visual")[0].getElementsByTagName("origin")[0].getAttribute("xyz").split(" ").map(Number))
+  link.setRotationFromEuler(new THREE.Euler(...linkNodes[i + 1].getElementsByTagName("visual")[0].getElementsByTagName("origin")[0].getAttribute("rpy").split(" ").map(Number), "ZYX"))
+  joint.add(link);
 
-const joint2DeltaZ = 0.02
+  const axes = new THREE.AxesHelper(0.2)
+  joint.add(axes)
+  parent = joint
+}
 
-const joint2Geometry = new THREE.CylinderGeometry(0.01, 0.01, 0.5)
-const joint2Material = new THREE.MeshPhongMaterial({color:0xFFFFFF})
-const joint2 = new THREE.Mesh(joint2Geometry, joint2Material)
-joint2.position.set(0.18, 0.234, 0.0615 + joint2DeltaZ)
-const joint2Euler = new THREE.Euler(0, 0, 0, 'ZYX')
-joint2.setRotationFromEuler(joint2Euler)
-joint2.material.visible = false
-const joint2RotationAxis = new THREE.Vector3(0.0, 0.0, 1.0)
-link1.add(joint2)
 
-const link2Geometry = await stlLoader.loadAsync('/ER15-1400/meshes/link_2.STL');
-const link2Material = new THREE.MeshPhongMaterial({color:0xDDDADA})
-const link2 = new THREE.Mesh(link2Geometry, link2Material);
-joint2.add(link2);
-
-const joint3Geometry = new THREE.CylinderGeometry(0.01, 0.01, 0.5)
-const joint3Material = new THREE.MeshPhongMaterial({color:0xFFFFFF})
-const joint3 = new THREE.Mesh(joint3Geometry, joint3Material)
-joint3.position.set(0.0, 0.58, 0.0 - joint2DeltaZ)
-const joint3Euler = new THREE.Euler(0.0, 0.0, 0.0, 'ZYX')
-joint3.setRotationFromEuler(joint3Euler)
-joint3.material.visible = false
-const joint3RotationAxis = new THREE.Vector3(0.0, 0.0, 1.0)
-link2.add(joint3)
-
-const link3Geometry = await stlLoader.loadAsync('/ER15-1400/meshes/link_3.STL');
-const link3Material = new THREE.MeshPhongMaterial({color:0xDDDADA})
-const link3 = new THREE.Mesh(link3Geometry, link3Material);
-joint3.add(link3);
-
-const joint4Geometry = new THREE.CylinderGeometry(0.01, 0.01, 0.5)
-const joint4Material = new THREE.MeshPhongMaterial({color:0xFFFFFF})
-const joint4 = new THREE.Mesh(joint4Geometry, joint4Material)
-joint4.position.set(0.20999, 0.16, -0.0628)
-const joint4Euler = new THREE.Euler(0.0, 0.0, 0.0, 'ZYX')
-joint4.setRotationFromEuler(joint4Euler)
-joint4.material.visible = false
-const joint4RotationAxis = new THREE.Vector3(1.0, 0.0, 0.0)
-link3.add(joint4)
-
-const link4Geometry = await stlLoader.loadAsync('/ER15-1400/meshes/link_4.STL');
-const link4Material = new THREE.MeshPhongMaterial({color:0xDDDADA})
-const link4 = new THREE.Mesh(link4Geometry, link4Material);
-joint4.add(link4);
-
-const joint5Geometry = new THREE.CylinderGeometry(0.01, 0.01, 0.5)
-const joint5Material = new THREE.MeshPhongMaterial({color:0xFFFFFF})
-const joint5 = new THREE.Mesh(joint5Geometry, joint5Material)
-joint5.position.set(0.42951, 0.0, 0.0)
-const joint5Euler = new THREE.Euler(0.0, 0.0, 0.0, 'ZYX')
-joint5.setRotationFromEuler(joint5Euler)
-joint5.material.visible = false
-const joint5RotationAxis = new THREE.Vector3(0.0, 0.0, 1.0)
-link4.add(joint5)
-
-const link5Geometry = await stlLoader.loadAsync('/ER15-1400/meshes/link_5.STL');
-const link5Material = new THREE.MeshPhongMaterial({color:0xDDDADA})
-const link5 = new THREE.Mesh(link5Geometry, link5Material);
-joint5.add(link5);
-
-const joint6Geometry = new THREE.CylinderGeometry(0.01, 0.01, 0.5)
-const joint6Material = new THREE.MeshPhongMaterial({color:0xFFFFFF})
-const joint6 = new THREE.Mesh(joint6Geometry, joint6Material)
-joint6.position.set(0.1, 0.0, 0.0)
-const joint6Euler = new THREE.Euler(-0.0013162, 0.0, 0.0, 'ZYX')
-joint6.setRotationFromEuler(joint6Euler)
-joint6.material.visible = false
-const joint6RotationAxis = new THREE.Vector3(1.0, 0.0, 0.0)
-link5.add(joint6)
-
-const link6Geometry = await stlLoader.loadAsync('/ER15-1400/meshes/link_6.STL');
-const link6Material = new THREE.MeshPhongMaterial({color:0xDDDADA})
-const link6 = new THREE.Mesh(link6Geometry, link6Material);
-joint6.add(link6);
-
-const axes6 = new THREE.AxesHelper(0.2);
-axes6.position.set(0.02,0.0, 0.0)
-const axes6Euler = new THREE.Euler(Math.PI / 2, 0.0,Math.PI / 2, 'ZYX')
-axes6.setRotationFromEuler(axes6Euler)
-link6.add(axes6)
-
+// const axes6 = new THREE.AxesHelper(0.2);
+// axes6.position.set(0.02,0.0, 0.0)
+// const axes6Euler = new THREE.Euler(Math.PI / 2, 0.0,Math.PI / 2, 'ZYX')
+// axes6.setRotationFromEuler(axes6Euler)
+// parent.add(axes6)
 
 
 // link0.rotateY(Math.PI / 2 * x1.value)
@@ -175,7 +118,7 @@ camera.lookAt(scene.position);
 
 // 5，创建渲染器
 const renderer = new THREE.WebGLRenderer();
-
+renderer.setClearColor('rgba(135,206,250,0.5)',1.0)
 // document.body.appendChild(renderer.domElement);
 // container.value.appendChild(renderer.domElement)
 onMounted(() => {
@@ -191,12 +134,9 @@ onMounted(() => {
 // link0.add(mesh1Axes)
 
 function render() {
-  joint1.rotateOnAxis(joint1RotationAxis, qDelta.list[0])
-  joint2.rotateOnAxis(joint2RotationAxis, qDelta.list[1])
-  joint3.rotateOnAxis(joint3RotationAxis, qDelta.list[2])
-  joint4.rotateOnAxis(joint4RotationAxis, qDelta.list[3])
-  joint5.rotateOnAxis(joint5RotationAxis, qDelta.list[4])
-  joint6.rotateOnAxis(joint6RotationAxis, qDelta.list[5])
+  for (let i = 0; i < dof; i++) {
+    joints[i].rotateOnAxis(jointRotationAxises[i], qDelta.list[i])
+  }
 
   renderer.render(scene, camera);
   requestAnimationFrame(render);

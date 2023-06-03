@@ -20,11 +20,11 @@
         <div class="reward-main">
           <ul class="reward-all">
             <li class="reward-item">
-              <img class="reward-img" src="/weixin.jpg" alt=""/>
+              <img class="reward-img" :src="weixin" alt=""/>
               <div class="reward-desc">微信</div>
             </li>
             <li class="reward-item">
-              <img class="reward-img" src="/zhifubao.jpg" alt="">
+              <img class="reward-img" :src="zhifubao" alt="">
               <div class="reward-desc">支付宝</div>
             </li>
           </ul>
@@ -60,6 +60,8 @@
 
 <script setup>
 import { reactive } from 'vue';
+import weixin from "@/assets/payment/weixin.jpg"
+import zhifubao from "@/assets/payment/zhifubao.jpg"
 const friendModules = import.meta.glob("@/assets/friend/*.*")
 
 const friendAvatars = Object.keys(friendModules)

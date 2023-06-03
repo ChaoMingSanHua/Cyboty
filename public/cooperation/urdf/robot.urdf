@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This URDF was automatically created by SolidWorks to URDF Exporter! Originally created by Stephen Brawner (brawner@gmail.com) 
+     Commit Version: 1.6.0-4-g7f85cfe  Build Version: 1.6.7995.38578
+     For more information, please see http://wiki.ros.org/sw_urdf_exporter -->
+<robot name="ur5">
+	<link name="base_link">
+		<inertial>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<mass value="4.0" />
+			<inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1" />
+		</inertial>
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<mesh filename="package://meshes/base.stl" />
+			</geometry>
+		</visual>
+	</link>
+	<link name="shoulder_link">
+		<inertial>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<mass value="3.7" />
+			<inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1" />
+		</inertial>
+		<visual>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<geometry>
+				<mesh filename="package://meshes/shoulder.stl" />
+			</geometry>
+		</visual>
+	</link>
+	<link name="upper_arm_link">
+		<inertial>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<mass value="8.3930" />
+			<inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1" />
+		</inertial>
+		<visual>
+			<origin xyz="0 0 0.13585" rpy="1.570796326589793 0 1.570796326589793" />
+			<geometry>
+				<mesh filename="package://meshes/upperarm.stl" />
+			</geometry>
+		</visual>
+	</link>
+	<link name="forearm_link">
+		<inertial>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<mass value="2.2750" />
+			<inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1" />
+		</inertial>
+		<visual>
+			<origin xyz="0 0 0.0165" rpy="1.570796326589793 0 1.570796326589793" />
+			<geometry>
+				<mesh filename="package://meshes/forearm.stl" />
+			</geometry>
+		</visual>
+	</link>
+	<link name="wrist_1_link">
+		<inertial>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<mass value="1.2190" />
+			<inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1" />
+		</inertial>
+		<visual>
+			<origin xyz="0 0 -0.093" rpy="1.570796326589793 0 0" />
+			<geometry>
+				<mesh filename="package://meshes/wrist1.stl" />
+			</geometry>
+		</visual>
+	</link>
+	<link name="wrist_2_link">
+		<inertial>
+			<origin xyz="0 0 0" rpy="0 0 0" />
+			<mass value="1.2190" />
+			<inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1" />
+		</inertial>
+		<visual>
+			<origin xyz="0 0 -0.095" rpy="0 0 0" />
+			<geometry>
+				<mesh filename="package://meshes/wrist2.stl" />
+			</geometry>
+		</visual>
+	</link>
+	<link name="wrist_3_link">
+		<inertial>
+			<origin xyz="0 0 0.001159" rpy="0 0 0" />
+			<mass value="0.1879" />
+			<inertia ixx="0.1" ixy="0" ixz="0" iyy="0.1" iyz="0" izz="0.1" />
+		</inertial>
+		<visual>
+			<origin xyz="0 0 -0.0818" rpy="1.570796326589793 0 0" />
+			<geometry>
+				<mesh filename="package://meshes/wrist3.stl" />
+			</geometry>
+		</visual>
+	</link>
+	
+	
+	<joint name="shoulder_pan_joint" type="revolute">
+		<parent link="base_link" />
+		<child link="shoulder_link" />
+		<origin xyz="0 0 0.089159" rpy="0 0 0" />
+		<axis xyz="0 0 1" />
+	</joint>
+	<joint name="shoulder_lift_joint" type="revolute">
+		<parent link="shoulder_link" />
+		<child link="upper_arm_link" />
+		<origin xyz="0 0 0" rpy="-1.570796326589793 -1.570796326589793 0" />
+		<axis xyz="0 0 1" />
+	</joint>
+	<joint name="elbow_joint" type="revolute">
+		<parent link="upper_arm_link" />
+		<child link="forearm_link" />
+		<origin xyz="0.425 0 0" rpy="0 0 0" />
+		<axis xyz="0 0 1" />
+	</joint>
+	<joint name="wrist_1_joint" type="revolute">
+		<parent link="forearm_link" />
+		<child link="wrist_1_link" />
+		<origin xyz="0.39225 0 0.10915" rpy="0 0 1.570796326589793" />
+		<axis xyz="0 0 1" />
+	</joint>
+	<joint name="wrist_2_joint" type="revolute">
+		<parent link="wrist_1_link" />
+		<child link="wrist_2_link" />
+		<origin xyz="0 -0.09465 0" rpy="1.570796326589793 0 0" />
+		<axis xyz="0 0 1" />
+	</joint>
+	<joint name="wrist_3_joint" type="revolute">
+		<parent link="wrist_2_link" />
+		<child link="wrist_3_link" />
+		<origin xyz="0 0.0823 0" rpy="-1.570796326589793 0 0" />
+		<axis xyz="0 0 1" />
+	</joint>
+</robot>
