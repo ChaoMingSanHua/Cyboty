@@ -86,6 +86,8 @@ const paras = reactive([
   },
 ])
 
+store.commit("clearConfirm")
+
 const confirm = () => {
   store.commit("confirm", paras)
   const robotPara = {

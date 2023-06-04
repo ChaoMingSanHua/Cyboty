@@ -21,7 +21,7 @@ export default createStore({
     qLowerLimit: [-Math.PI / 2, -Math.PI / 2, -Math.PI / 2, -Math.PI / 2, -Math.PI / 2, -Math.PI / 2],
     qUpperLimit: [Math.PI / 2, Math.PI / 2, Math.PI / 2, Math.PI / 2, Math.PI / 2, Math.PI / 2],
 
-    robotType: 0
+    robotType: 0,
   },
   getters: {
     dhPara: (state) => {
@@ -61,11 +61,15 @@ export default createStore({
 
       state.configComplete = true
     },
+    clearConfirm(state) {
+      state.configComplete = false
+    },
     setQ(state, qs) {
       qs.forEach((value, index) => {
         state.Q[index] = value
       })
     }
+
   },
   actions: {
   },

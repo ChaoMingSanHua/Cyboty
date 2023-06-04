@@ -64,7 +64,6 @@ function render() {
   qDelta.list.forEach((value, index, array) => {
     array[index] = 0
   })
-  console.log("render")
 }
 
 watch(() => [...store.state.Q], ((value, oldValue) => {
@@ -132,10 +131,10 @@ const loadSTL = async () => {
     link.setRotationFromEuler(new THREE.Euler(...linkNodes[i + 1].getElementsByTagName("visual")[0].getElementsByTagName("origin")[0].getAttribute("rpy").split(" ").map(Number), "ZYX"))
     joint.add(link);
 
-    const axes = new THREE.AxesHelper(0.2)
-    joint.add(axes)
     parent = joint
   }
+  const axes = new THREE.AxesHelper(0.2)
+  parent.add(axes)
 }
 
 const loadOther = () => {

@@ -6,9 +6,14 @@
         <router-view />
       </v-col>
       <v-col md="3" cols="12">
-        <Suspense>
-          <STLModel />
-        </Suspense>
+        <template v-if="store.state.configComplete">
+          <Suspense>
+            <STLModel />
+          </Suspense>
+        </template>
+        <template v-else>
+          <structure-diagram />
+        </template>
       </v-col>
     </v-row>
   </v-app>
@@ -18,4 +23,8 @@
   import {defineAsyncComponent} from "vue";
   import TopNavBar from "@/components/layout/TopNavBar";
   const STLModel = defineAsyncComponent(() => import('@/components/STLModel'))
+  import StructureDiagram from "@/components/StructureDiagram"
+
+  import {useStore} from "vuex";
+  const store = useStore()
 </script>
