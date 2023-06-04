@@ -36,6 +36,7 @@ class Robot {
   #Thetas
   #Sigmas
   #jConfig
+  #robotType
   constructor() {
     this.#jConfig = {
       overhead: OverheadEnum.FRONT,
@@ -80,10 +81,14 @@ class Robot {
     }
   }
 
+  get getRobotType() {
+    return this.#robotType
+  }
+
   configRobot = (robotPara) => {
-    this.robotType = robotPara.robotType
+    this.#robotType = robotPara.robotType
     const {linkLengths} = robotPara
-    switch (this.robotType) {
+    switch (this.#robotType) {
       case RobotTypeEnum.INDUSTRY:
         this.#dof = 6
         this.#Alphas = [0, Math.PI / 2, 0, Math.PI / 2, -Math.PI / 2, Math.PI / 2]
@@ -244,7 +249,7 @@ class Robot {
 
     let theta1_1, theta1_2, theta1, theta2, theta3, theta3_1, theta3_2, theta4, theta5, theta5_1, theta5_2, theta6
     let T01
-    switch (this.robotType) {
+    switch (this.#robotType) {
       case RobotTypeEnum.INDUSTRY:
         const Px = px - this.#Ds[5] * ax
         const Py = py - this.#Ds[5] * ay
@@ -418,7 +423,7 @@ class Robot {
     let theta1Condition = 0
     let theta3Condition = 0
     let theta5Condition = 0
-    switch (this.robotType) {
+    switch (this.#robotType) {
       case RobotTypeEnum.INDUSTRY:
         const Px = px - this.#Ds[5] * ax
         const Py = py - this.#Ds[5] * ay

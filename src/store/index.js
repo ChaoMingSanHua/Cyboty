@@ -20,6 +20,8 @@ export default createStore({
     // Joint Limit
     qLowerLimit: [-Math.PI / 2, -Math.PI / 2, -Math.PI / 2, -Math.PI / 2, -Math.PI / 2, -Math.PI / 2],
     qUpperLimit: [Math.PI / 2, Math.PI / 2, Math.PI / 2, Math.PI / 2, Math.PI / 2, Math.PI / 2],
+
+    robotType: 0
   },
   getters: {
     dhPara: (state) => {
@@ -34,33 +36,8 @@ export default createStore({
       return robot.fKine([...state.Q])
     },
     X: ((state, getters) => {
-      // return [getters.px, getters.py, getters.pz, getters.roll, getters.pitch, getters.yaw]
       return Transformation.TransToX(getters.T)
     }),
-    // px: ((state, getters) => {
-    //   // return getters.T.get([0, 3])
-    //   return getters.X[0]
-    // }),
-    // py: ((state, getters) => {
-    //   // return getters.T.get([1, 3])
-    //   return getters.X[1]
-    // }),
-    // pz: ((state, getters) => {
-    //   // return getters.T.get([2, 3])
-    //   return getters.X[2]
-    // }),
-    // roll: ((state, getters) => {
-    //   // return Transformation.RTorpy(getters.T)[0]
-    //   return getters.X[3]
-    // }),
-    // pitch: ((state, getters) => {
-    //   // return Transformation.RTorpy(getters.T)[1]
-    //   return getters.X[4]
-    // }),
-    // yaw: ((state, getters) => {
-    //   // return Transformation.RTorpy(getters.T)[2]
-    //   return getters.X[5]
-    // }),
     R: ((state, getters) => {
       // return getters.T.subset(math.index(math.range(0, 3), math.range(0, 3)))
       return Transformation.TransToRp(getters.T).R

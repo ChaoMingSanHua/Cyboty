@@ -58,6 +58,10 @@ class RobotService {
   getTf = () => {
     return this.#plan.getTf
   }
+
+  getRobotType = () => {
+    return Result.okData(robot.getRobotType)
+  }
 }
 
 export {RobotService}

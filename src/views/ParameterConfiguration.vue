@@ -7,10 +7,10 @@
         <div class="my-3 text-center text-h5 font-weight-medium">机型选择</div>
       </v-col>
       <v-col class="v-col-12 v-col-md-6">
-        <input type="radio" name="robotType" :value="RobotTypeEnum.INDUSTRY" v-model="robotType"> 工业型
+        <input type="radio" name="robotType" :value="RobotTypeEnum.INDUSTRY" v-model="store.state.robotType"> 工业型
       </v-col>
       <v-col class="v-col-12 v-col-md-6">
-        <input type="radio" name="robotType" :value="RobotTypeEnum.COOPERATION" v-model="robotType"> 协作型
+        <input type="radio" name="robotType" :value="RobotTypeEnum.COOPERATION" v-model="store.state.robotType"> 协作型
       </v-col>
     </v-row>
     <v-divider />
@@ -89,7 +89,7 @@ const paras = reactive([
 const confirm = () => {
   store.commit("confirm", paras)
   const robotPara = {
-    robotType: robotType.value,
+    robotType: store.state.robotType,
     linkLengths: [
       paras[0].value,
       paras[1].value,
