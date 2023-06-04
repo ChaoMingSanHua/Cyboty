@@ -16,15 +16,6 @@ const container = ref()
 const scene = new THREE.Scene()
 const stlLoader = new STLLoader()
 
-// var link0
-
-const q1Delta = ref(0)
-const q2Delta = ref(0)
-const q3Delta = ref(0)
-const q4Delta = ref(0)
-const q5Delta = ref(0)
-const q6Delta = ref(0)
-
 const qDelta = reactive({
   list: [0, 0, 0, 0, 0, 0]
 })

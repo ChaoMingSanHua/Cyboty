@@ -35,14 +35,14 @@ import {ref, watch} from "vue";
 import {useRouter} from "vue-router";
 
 const dialog = ref(false)
-const emit = defineEmits(["test"])
+const emit = defineEmits(["confirm"])
 const router = useRouter()
 
 watch(dialog, (value => {
   if (!value) {
     return
   }
-  emit("test")
+  emit("confirm")
   setTimeout(() => {
     dialog.value = false
     router.push("/dh_parameter")

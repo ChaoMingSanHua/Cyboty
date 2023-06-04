@@ -42,7 +42,7 @@
       </v-col>
     </v-row>
     <v-divider />
-    <confirm-configuration @test="confirm"/>
+    <confirm-configuration @confirm="confirm"/>
   </v-card>
 </template>
 
@@ -88,7 +88,6 @@ const paras = reactive([
 
 const confirm = () => {
   store.commit("confirm", paras)
-  // console.log(store.)
   const robotPara = {
     robotType: robotType.value,
     linkLengths: [
