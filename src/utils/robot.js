@@ -1,7 +1,7 @@
-import { BizException } from "@/exception/biz_exception"
+import {BizException} from "@/exception/biz_exception"
 import * as math from "mathjs"
 import {Transformation} from "./transformation"
-import { StatusCodeEnum } from '@/enums/status_code_enum';
+import {StatusCodeEnum} from '@/enums/status_code_enum';
 
 const RobotTypeEnum = {
   INDUSTRY: 0,
@@ -145,91 +145,196 @@ class Robot {
     const py = T.get([1, 3])
     const pz = T.get([2, 3])
 
-    const Px = px - this.#Ds[5] * ax
-    const Py = py - this.#Ds[5] * ay
-    const Pz = pz - this.#Ds[5] * az - this.#Ds[0]
+    const Theta1 = []
+    const Theta2 = []
+    const Theta3 = []
+    const Theta4 = []
+    const Theta5 = []
+    const Theta6 = []
 
     let theta1_1, theta1_2
-    if (Transformation.nearZero(Math.pow(Px, 2) + Math.pow(Py, 2))) {
-      theta1_1 = 0
-      theta1_2 = 0
-    } else {
-      theta1_1 = Math.atan2(this.#Ds[2], Math.sqrt(Math.pow(Px, 2) +  Math.pow(Py, 2) - Math.pow(this.#Ds[2], 2))) + Math.atan2(Py, Px)
-      theta1_2 = Math.atan2(this.#Ds[2], -Math.sqrt(Math.pow(Px, 2) +  Math.pow(Py, 2) - Math.pow(this.#Ds[2], 2))) + Math.atan2(Py, Px)
-    }
+    switch (this.#robotType) {
+      case RobotTypeEnum.INDUSTRY:
+        const Px = px - this.#Ds[5] * ax
+        const Py = py - this.#Ds[5] * ay
+        const Pz = pz - this.#Ds[5] * az - this.#Ds[0]
 
-    const Theta1 = []
-    for (let i = 0; i < 4; i++) {
-      Theta1.push(theta1_1)
-    }
-    for (let i = 0; i < 4; i++) {
-      Theta1.push(theta1_2)
-    }
-
-    const Theta3 = []
-    for (let i = 0; i < 2; i++) {
-      let k3 = (Math.pow(this.#As[1] - Math.cos(Theta1[i*4]) * Px - Math.sin(Theta1[i*4]) * Py, 2) + Math.pow(Pz, 2) - (Math.pow(this.#As[3], 2) + Math.pow(this.#Ds[3], 2) + Math.pow(this.#As[2], 2))) / (2 * this.#As[2])
-      const theta3_1 = Math.atan2(k3, Math.sqrt(Math.pow(this.#As[3], 2) + Math.pow(this.#Ds[3], 2) - Math.pow(k3, 2))) - Math.atan2(this.#As[3], this.#Ds[3]);
-      for (let j = 0; j < 2; j++) {
-        Theta3.push(theta3_1)
-      }
-      const theta3_2 = Math.atan2(k3, -Math.sqrt(Math.pow(this.#As[3], 2) + Math.pow(this.#Ds[3], 2) - Math.pow(k3, 2))) - Math.atan2(this.#As[3], this.#Ds[3]);
-      for (let j = 0; j < 2; j++) {
-        Theta3.push(theta3_2)
-      }
-    }
-
-    const Theta2 = []
-    for (let i = 0; i < 2; i++) {
-      const g = Math.cos(Theta1[i*4]) * Px + Math.sin(Theta1[i*4]) * Py - this.#As[1]
-      for (let j = 0; j < 2; j++) {
-        const e = this.#As[3] * Math.cos(Theta3[i*4 + j*2]) + this.#Ds[3] * Math.sin(Theta3[i*4 + j*2]) + this.#As[2]
-        const f = this.#As[3] * Math.sin(Theta3[i*4 + j*2]) - this.#Ds[3] * Math.cos(Theta3[i*4 + j*2])
-
-        if (Math.pow(g, 2) + Math.pow(Pz, 2) > 0) {
-          const theta2 = Math.atan2(Pz * e - g * f, g * e + Pz * f) - Math.PI / 2
-          for (let k = 0; k < 2; k++) {
-            Theta2.push(theta2)
-          }
+        if (Transformation.nearZero(Math.pow(Px, 2) + Math.pow(Py, 2))) {
+          theta1_1 = 0
+          theta1_2 = 0
         } else {
-          for (let k = 0; k < 2; k++) {
-            Theta2.push(0)
+          theta1_1 = Math.atan2(this.#Ds[2], Math.sqrt(Math.pow(Px, 2) +  Math.pow(Py, 2) - Math.pow(this.#Ds[2], 2))) + Math.atan2(Py, Px)
+          theta1_2 = Math.atan2(this.#Ds[2], -Math.sqrt(Math.pow(Px, 2) +  Math.pow(Py, 2) - Math.pow(this.#Ds[2], 2))) + Math.atan2(Py, Px)
+        }
+
+        for (let i = 0; i < 4; i++) {
+          Theta1.push(theta1_1)
+        }
+        for (let i = 0; i < 4; i++) {
+          Theta1.push(theta1_2)
+        }
+
+        for (let i = 0; i < 2; i++) {
+          let k3 = (Math.pow(this.#As[1] - Math.cos(Theta1[i*4]) * Px - Math.sin(Theta1[i*4]) * Py, 2) + Math.pow(Pz, 2) - (Math.pow(this.#As[3], 2) + Math.pow(this.#Ds[3], 2) + Math.pow(this.#As[2], 2))) / (2 * this.#As[2])
+          const theta3_1 = Math.atan2(k3, Math.sqrt(Math.pow(this.#As[3], 2) + Math.pow(this.#Ds[3], 2) - Math.pow(k3, 2))) - Math.atan2(this.#As[3], this.#Ds[3]);
+          for (let j = 0; j < 2; j++) {
+            Theta3.push(theta3_1)
+          }
+          const theta3_2 = Math.atan2(k3, -Math.sqrt(Math.pow(this.#As[3], 2) + Math.pow(this.#Ds[3], 2) - Math.pow(k3, 2))) - Math.atan2(this.#As[3], this.#Ds[3]);
+          for (let j = 0; j < 2; j++) {
+            Theta3.push(theta3_2)
           }
         }
-      }
+
+        for (let i = 0; i < 2; i++) {
+          const g = Math.cos(Theta1[i*4]) * Px + Math.sin(Theta1[i*4]) * Py - this.#As[1]
+          for (let j = 0; j < 2; j++) {
+            const e = this.#As[3] * Math.cos(Theta3[i*4 + j*2]) + this.#Ds[3] * Math.sin(Theta3[i*4 + j*2]) + this.#As[2]
+            const f = this.#As[3] * Math.sin(Theta3[i*4 + j*2]) - this.#Ds[3] * Math.cos(Theta3[i*4 + j*2])
+
+            if (Math.pow(g, 2) + Math.pow(Pz, 2) > 0) {
+              const theta2 = Math.atan2(Pz * e - g * f, g * e + Pz * f)
+              for (let k = 0; k < 2; k++) {
+                Theta2.push(theta2)
+              }
+            } else {
+              for (let k = 0; k < 2; k++) {
+                Theta2.push(0)
+              }
+            }
+          }
+        }
+
+        for (let i = 0; i < 4; i++) {
+          const T01 = getTransformationMatrixMDH(this.#Alphas[0], this.#As[0], this.#Ds[0], 0, this.#Sigmas[0], Theta1[i*2])
+          const T12 = getTransformationMatrixMDH(this.#Alphas[1], this.#As[1], this.#Ds[1], Theta2[i*2], this.#Sigmas[1], 0)
+          const T23 = getTransformationMatrixMDH(this.#Alphas[2], this.#As[2], this.#Ds[2], 0, this.#Sigmas[2], Theta3[i*2])
+
+          const T03 = math.multiply(math.multiply(T01, T12), T23)
+          const T36 = math.multiply(math.inv(T03), T)
+
+          const theta5_1 = Math.acos(-T36.get([1, 2]))
+          const theta5_2 = -theta5_1
+          Theta5.push(theta5_1)
+          Theta5.push(theta5_2)
+          if (Transformation.nearZero(theta5_1)) {
+            for (let j = 0; j < 2; j++) {
+              Theta4.push(0)
+              Theta6.push(0)
+            }
+          } else {
+            for (let j = 0; j < 2; j++) {
+              const theta4 = Math.atan2(T36.get([2, 2]) / Math.sin(Theta5[i*2 + j]), T36.get([0, 2]) / Math.sin(Theta5[i*2 + j]))
+              Theta4.push(theta4)
+              const theta6 = Math.atan2(-T36.get([1, 1]) / Math.sin(Theta5[i*2 + j]), T36.get([1, 0]) / Math.sin(Theta5[i*2 + j]))
+              Theta6.push(theta6)
+            }
+          }
+        }
+        break
+      case RobotTypeEnum.COOPERATION:
+        const m = py - ay * this.#Ds[5]
+        const n = px - ax * this.#Ds[5]
+
+        // solve theta1
+        const theta1Condition = math.pow(m, 2) + math.pow(n, 2) - math.pow(this.#Ds[3], 2)
+        if (Transformation.nearZero(Transformation.norm([m, n]))) {
+          theta1_1 = 0
+          theta1_2 = 0
+        } else {
+          theta1_1 = math.atan2(m, n) - math.atan2(this.#Ds[3], math.sqrt(theta1Condition))
+          theta1_2 = math.atan2(m, n) - math.atan2(this.#Ds[3], -math.sqrt(theta1Condition))
+        }
+        for (let i = 0; i < 4; i++) {
+          Theta1.push(theta1_1)
+        }
+        for (let i = 0; i < 4; i++) {
+          Theta1.push(theta1_2)
+        }
+
+        // solve theta5
+        for (let i = 0; i < 2; i++) {
+          const theta5Condition = -ax * math.sin(Theta1[i * 4]) + ay * math.cos(Theta1[i * 4])
+          const theta5_1 = math.acos(theta5Condition)
+          const theta5_2 = -math.acos(theta5Condition)
+          for (let j = 0; j < 2; j++) {
+            Theta5.push(theta5_1)
+          }
+          for (let j = 0; j < 2; j++) {
+            Theta5.push(theta5_2)
+          }
+        }
+
+        // solve theta6
+        for (let i = 0; i < 2; i++) {
+          const m1 = -nx * math.sin(Theta1[i * 4]) + ny * math.cos(Theta1[i * 4])
+          const n1 = -ox * math.sin(Theta1[i * 4]) + oy * math.cos(Theta1[i * 4])
+          for (let j = 0; j < 2; j++) {
+            let theta6
+            if (Transformation.nearZero(math.sin(Theta5[i * 4 + j * 2]))) {
+              theta6 = 0
+            } else {
+              theta6 = math.atan2(-n1 / math.sin(Theta5[i * 4 + j * 2]), m1 / Math.sin(Theta5[i * 4 + j * 2]))
+            }
+            for (let k = 0; k < 2; k++) {
+              Theta6.push(theta6)
+            }
+          }
+        }
+
+        for (let i = 0; i < 4; i++) {
+          // solve theta3
+          const T01 = getTransformationMatrixMDH(this.#Alphas[0], this.#As[0], this.#Ds[0], Theta1[i * 2], this.#Sigmas[0], 0)
+          const T45 = getTransformationMatrixMDH(this.#Alphas[4], this.#As[4], this.#Ds[4], Theta5[i * 2], this.#Sigmas[4], 0)
+          const T56 = getTransformationMatrixMDH(this.#Alphas[5], this.#As[5], this.#Ds[5], Theta6[i * 2], this.#Sigmas[5], 0)
+
+          const T46 = math.multiply(T45, T56)
+          const T14 = math.multiply(math.multiply(math.inv(T01), T), math.inv(T46))
+          const x = T14.get([0, 3])
+          const y = T14.get([2, 3])
+          const theta3Condition = (Math.pow(x, 2) + Math.pow(y, 2) - Math.pow(this.#As[2], 2) - Math.pow(this.#As[3], 2)) / (2 * this.#As[2] * this.#As[3])
+          if (math.abs(theta3Condition) > 1) {
+            for (let j = 0; j < 2; j++) {
+              Theta3.push(0)
+              Theta2.push(0)
+              Theta4.push(0)
+            }
+            continue
+          }
+          const theta3_1 = math.acos(theta3Condition)
+          const theta3_2 = -math.acos(theta3Condition)
+          Theta3.push(theta3_1)
+          Theta3.push(theta3_2)
+
+          for (let j = 0; j < 2; j++) {
+            const M = math.matrix([
+              [this.#As[3] * Math.cos(Theta3[i * 2 + j]) + this.#As[2], -this.#As[3] * Math.sin(Theta3[i * 2 + j])],
+              [this.#As[3] * Math.sin(Theta3[i * 2 + j]), this.#As[3] * Math.cos(Theta3[i * 2 + j]) + this.#As[2]]
+            ])
+            const XY = math.matrix([
+              [x],
+              [-y]
+            ])
+            const CS = math.multiply(math.inv(M), XY)
+            const theta2 = math.atan2(CS.get([1, 0]), CS.get([0, 0]))
+
+            // solve theta4
+            const theta4 = math.atan2(-T14.get([0, 1]), T14.get([0, 0])) - theta2 - Theta3[i * 2 + j]
+
+            Theta2.push(theta2)
+            Theta4.push(theta4)
+          }
+        }
+        break
+      default:
+        break
     }
 
-    const Theta5 = []
-    const Theta4 = []
-    const Theta6 = []
-    for (let i = 0; i < 4; i++) {
-      const T01 = getTransformationMatrixMDH(this.#Alphas[0], this.#As[0], this.#Ds[0], 0, this.#Sigmas[0], Theta1[i*2])
-      const T12 = getTransformationMatrixMDH(this.#Alphas[1], this.#As[1], this.#Ds[1], this.#Thetas[1], this.#Sigmas[1], Theta2[i*2])
-      const T23 = getTransformationMatrixMDH(this.#Alphas[2], this.#As[2], this.#Ds[2], 0, this.#Sigmas[2], Theta3[i*2])
-
-      const T03 = math.multiply(math.multiply(T01, T12), T23)
-      const T36 = math.multiply(math.inv(T03), T)
-
-      const theta5_1 = Math.acos(-T36.get([1, 2]))
-      const theta5_2 = -theta5_1
-      Theta5.push(theta5_1)
-      Theta5.push(theta5_2)
-      if (Transformation.nearZero(theta5_1)) {
-        for (let j = 0; j < 2; j++) {
-          Theta4.push(0)
-          Theta6.push(0)
-        }
-      } else {
-        for (let j = 0; j < 2; j++) {
-          const theta4 = Math.atan2(T36.get([2, 2]) / Math.sin(Theta5[i*2 + j]), T36.get([0, 2]) / Math.sin(Theta5[i*2 + j]))
-          Theta4.push(theta4)
-          const theta6 = Math.atan2(-T36.get([1, 1]) / Math.sin(Theta5[i*2 + j]), T36.get([1, 0]) / Math.sin(Theta5[i*2 + j]))
-          Theta6.push(theta6)
-        }
-      }
-    }
-
-    return [Theta1, Theta2, Theta3, Theta4, Theta5, Theta6]
+    return [Theta1, Theta2, Theta3, Theta4, Theta5, Theta6].map((value, index) => {
+      return value.map(value1 => {
+        return value1 - this.#Thetas[index]
+      })
+    })
   }
 
   iKine6s = (T, q) => {
@@ -522,8 +627,8 @@ class Robot {
         const d4 = this.#Ds[3]
         const d6 = this.#Ds[5]
 
-        const m = ay * d6 - py
-        const n = ax * d6 - px
+        const m = py - ay * d6
+        const n = px - ax * d6
 
         // solve theta1
         // let theta1 = 0.0
@@ -536,10 +641,10 @@ class Robot {
         } else {
           switch (this.#jConfig.overhead) {
             case OverheadEnum.FRONT:
-              theta1 = Math.atan2(m, n) - Math.atan2(-d4, Math.sqrt(theta1Condition))
+              theta1 = Math.atan2(m, n) - Math.atan2(d4, Math.sqrt(theta1Condition))
               break
             case OverheadEnum.BACK:
-              theta1 = Math.atan2(m, n) - Math.atan2(-d4, -Math.sqrt(theta1Condition))
+              theta1 = Math.atan2(m, n) - Math.atan2(d4, -Math.sqrt(theta1Condition))
               break
             default:
               return []
@@ -587,10 +692,10 @@ class Robot {
         }
         switch (this.#jConfig.inline) {
           case InlineEnum.UP:
-            theta3 = -Math.acos(theta3Condition)
+            theta3 = Math.acos(theta3Condition)
             break
           case InlineEnum.DOWN:
-            theta3 = Math.acos(theta3Condition)
+            theta3 = -Math.acos(theta3Condition)
             break
           default:
             return []

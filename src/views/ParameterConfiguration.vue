@@ -47,7 +47,7 @@
 </template>
 
 <script setup>
-import {computed, reactive, ref} from "vue";
+import {computed, reactive, ref, watch} from "vue";
 import {useStore} from "vuex";
 import {RobotTypeEnum, robot} from "@/utils/robot";
 import ConfirmConfiguration from "@/components/dialog/ConfirmConfiguration"
@@ -87,6 +87,26 @@ const paras = reactive([
 ])
 
 store.commit("clearConfirm")
+
+const industryParameters = [0.376, 0.05, 0.43, 0, 0.05, 0.4275, 0.089]
+const cooperationParameters = [0.089, 0.425, 0.392, 0.109, 0.095, 0.08, 0.0]
+
+watch(() => store.state.robotType, (value) => {
+  switch (value) {
+    case RobotTypeEnum.INDUSTRY:
+      industryParameters.forEach((value1, index) => {
+        paras[index].value = value1
+      })
+      break
+    case RobotTypeEnum.COOPERATION:
+      cooperationParameters.forEach((value1, index) => {
+        paras[index].value = value1
+      })
+      break
+    default:
+      break
+  }
+})
 
 const confirm = () => {
   store.commit("confirm", paras)

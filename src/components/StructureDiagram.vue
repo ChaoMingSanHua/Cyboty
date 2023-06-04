@@ -28,7 +28,7 @@ Object.keys(diagramModule).forEach(filename => {
 })
 console.log(diagrams)
 
-watch(() => store.state.robotType, (a) => {
+watch(() => store.state.robotType, () => {
   Object.keys(RobotTypeEnum).forEach(value => {
     if (RobotTypeEnum[value] === store.state.robotType) {
       robotType.value = value.toLowerCase()
