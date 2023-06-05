@@ -420,6 +420,7 @@ const trajectoryPlan = async () => {
       return
     }
     tf = robotService.getTf()
+    robotService.setJConfig([...store.state.Q])
   }
 
   if (timer) {

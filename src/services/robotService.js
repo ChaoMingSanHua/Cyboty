@@ -62,6 +62,11 @@ class RobotService {
   getRobotType = () => {
     return Result.okData(robot.getRobotType)
   }
+
+  setJConfig = (q) => {
+    robot.setJConfig(q)
+    return Result.ok()
+  }
 }
 
 export {RobotService}

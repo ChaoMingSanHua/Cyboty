@@ -930,10 +930,20 @@ class Robot {
     }
 
     // inline
-    if (theta[2] + Math.atan2(this.#As[3], this.#Ds[3]) <= Math.PI / 2) {
-      this.#jConfig.inline = 0
-    } else {
-      this.#jConfig.inline = 1
+    switch (this.#robotType) {
+      case RobotTypeEnum.INDUSTRY:
+        if (theta[2] + Math.atan2(this.#As[3], this.#Ds[3]) <= Math.PI / 2) {
+          this.#jConfig.inline = 0
+        } else {
+          this.#jConfig.inline = 1
+        }
+        break
+      case RobotTypeEnum.COOPERATION:
+        if (theta[2] >= 0) {
+          this.#jConfig.inline = InlineEnum.UP
+        } else {
+          this.#jConfig.inline = InlineEnum.DOWN
+        }
     }
 
     // wrist
