@@ -6,7 +6,7 @@
     <v-container class="my-4 text-center">
       <v-row>
         <v-col class="v-col-12 v-col-md-4 mx-auto" v-for="(value, index) of store.state.Q" :key="index">
-          关节{{ index + 1 }}:
+          Joint{{ index + 1 }}:
           <input type="number" class="ml-4 input-number" v-fixed="{obj:store.state.Q, key: index}">
           rad
         </v-col>

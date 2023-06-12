@@ -39,14 +39,9 @@ watch(() => store.state.robotType, () => {
 
 <style lang="scss" scoped>
 .container {
-  height: 500px;
   margin-top: 160px;
   position: sticky;
   top: 100px;
-
-  .canvas {
-    height: 100%;
-    width: 100%;
-  }
+  padding: 10px;
 }
 </style>

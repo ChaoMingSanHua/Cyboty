@@ -7,7 +7,7 @@
         <v-table>
           <thead>
           <tr>
-            <th v-for="(item, index) of Qs">Theta{{index + 1}}</th>
+            <th v-for="(item, index) of Qs">Joint{{index + 1}}</th>
           </tr>
           </thead>
           <tbody>
