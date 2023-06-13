@@ -30,6 +30,7 @@ const store = useStore()
 const Qs = computed(() => {
   return robot.iKineAll(store.getters.T)
 })
+
 </script>
 
 <style lang="scss" scoped>

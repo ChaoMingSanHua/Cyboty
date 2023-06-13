@@ -11,8 +11,16 @@ const fixed = (fractionDigits) => {
       }
       el.onblur = (event) => {
         if (binding.value.index !== undefined) {
+          if (event.target.value === "") {
+            el.value = binding.value.obj[binding.value.key][binding.value.index].toFixed(digit)
+            return
+          }
           binding.value.obj[key][binding.value.index] = parseFloat(parseFloat(event.target.value).toFixed(digit))
           el.value = binding.value.obj[binding.value.key][binding.value.index].toFixed(digit)
+          return
+        }
+        if (event.target.value === "") {
+          el.value = binding.value.obj[key].toFixed(digit)
           return
         }
         binding.value.obj[key] = parseFloat(parseFloat(event.target.value).toFixed(digit))

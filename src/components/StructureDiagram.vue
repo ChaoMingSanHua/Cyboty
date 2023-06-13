@@ -26,7 +26,6 @@ Object.keys(diagramModule).forEach(filename => {
   const type = filename.split("/").at(-1).split(".")[0]
   diagrams[type] = diagramModule[filename].default
 })
-console.log(diagrams)
 
 watch(() => store.state.robotType, () => {
   Object.keys(RobotTypeEnum).forEach(value => {

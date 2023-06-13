@@ -153,18 +153,20 @@ class Robot {
     const Theta6 = []
 
     let theta1_1, theta1_2
+    let theta1Condition, theta3Condition
     switch (this.#robotType) {
       case RobotTypeEnum.INDUSTRY:
         const Px = px - this.#Ds[5] * ax
         const Py = py - this.#Ds[5] * ay
         const Pz = pz - this.#Ds[5] * az - this.#Ds[0]
 
+        theta1Condition = math.pow(Px, 2) + math.pow(Py, 2) - math.pow(this.#Ds[2], 2)
         if (Transformation.nearZero(Math.pow(Px, 2) + Math.pow(Py, 2))) {
           theta1_1 = 0
           theta1_2 = 0
         } else {
-          theta1_1 = Math.atan2(this.#Ds[2], Math.sqrt(Math.pow(Px, 2) +  Math.pow(Py, 2) - Math.pow(this.#Ds[2], 2))) + Math.atan2(Py, Px)
-          theta1_2 = Math.atan2(this.#Ds[2], -Math.sqrt(Math.pow(Px, 2) +  Math.pow(Py, 2) - Math.pow(this.#Ds[2], 2))) + Math.atan2(Py, Px)
+          theta1_1 = Math.atan2(this.#Ds[2], Math.sqrt(theta1Condition)) + Math.atan2(Py, Px)
+          theta1_2 = Math.atan2(this.#Ds[2], -Math.sqrt(theta1Condition)) + Math.atan2(Py, Px)
         }
 
         for (let i = 0; i < 4; i++) {
@@ -176,17 +178,30 @@ class Robot {
 
         for (let i = 0; i < 2; i++) {
           let k3 = (Math.pow(this.#As[1] - Math.cos(Theta1[i*4]) * Px - Math.sin(Theta1[i*4]) * Py, 2) + Math.pow(Pz, 2) - (Math.pow(this.#As[3], 2) + Math.pow(this.#Ds[3], 2) + Math.pow(this.#As[2], 2))) / (2 * this.#As[2])
-          const theta3_1 = Math.atan2(k3, Math.sqrt(Math.pow(this.#As[3], 2) + Math.pow(this.#Ds[3], 2) - Math.pow(k3, 2))) - Math.atan2(this.#As[3], this.#Ds[3]);
+          theta3Condition = math.pow(this.#As[3], 2) + math.pow(this.#Ds[3], 2) - math.pow(k3, 2)
+          if (theta3Condition < 0) {
+            for (let j = 0; j < 4; j++) {
+              Theta1[i * 4 + j] = null
+              Theta3.push(null)
+            }
+            continue
+          }
+          const theta3_1 = Math.atan2(k3, Math.sqrt(theta3Condition)) - Math.atan2(this.#As[3], this.#Ds[3]);
           for (let j = 0; j < 2; j++) {
             Theta3.push(theta3_1)
           }
-          const theta3_2 = Math.atan2(k3, -Math.sqrt(Math.pow(this.#As[3], 2) + Math.pow(this.#Ds[3], 2) - Math.pow(k3, 2))) - Math.atan2(this.#As[3], this.#Ds[3]);
+          const theta3_2 = Math.atan2(k3, -Math.sqrt(theta3Condition)) - Math.atan2(this.#As[3], this.#Ds[3]);
           for (let j = 0; j < 2; j++) {
             Theta3.push(theta3_2)
           }
         }
 
         for (let i = 0; i < 2; i++) {
+          if (Theta1[i * 4] === null) {
+            for (let j = 0; j < 4; j++) {
+              Theta2.push(null)
+            }
+          }
           const g = Math.cos(Theta1[i*4]) * Px + Math.sin(Theta1[i*4]) * Py - this.#As[1]
           for (let j = 0; j < 2; j++) {
             const e = this.#As[3] * Math.cos(Theta3[i*4 + j*2]) + this.#Ds[3] * Math.sin(Theta3[i*4 + j*2]) + this.#As[2]
@@ -206,6 +221,14 @@ class Robot {
         }
 
         for (let i = 0; i < 4; i++) {
+          if (Theta1[i * 2] === null) {
+            for (let j = 0; j < 2; j++) {
+              Theta4.push(null)
+              Theta5.push(null)
+              Theta6.push(null)
+            }
+            continue
+          }
           const T01 = getTransformationMatrixMDH(this.#Alphas[0], this.#As[0], this.#Ds[0], 0, this.#Sigmas[0], Theta1[i*2])
           const T12 = getTransformationMatrixMDH(this.#Alphas[1], this.#As[1], this.#Ds[1], Theta2[i*2], this.#Sigmas[1], 0)
           const T23 = getTransformationMatrixMDH(this.#Alphas[2], this.#As[2], this.#Ds[2], 0, this.#Sigmas[2], Theta3[i*2])
@@ -237,7 +260,10 @@ class Robot {
         const n = px - ax * this.#Ds[5]
 
         // solve theta1
-        const theta1Condition = math.pow(m, 2) + math.pow(n, 2) - math.pow(this.#Ds[3], 2)
+        theta1Condition = math.pow(m, 2) + math.pow(n, 2) - math.pow(this.#Ds[3], 2)
+        if (theta1Condition < 0) {
+          theta1Condition = 0
+        }
         if (Transformation.nearZero(Transformation.norm([m, n]))) {
           theta1_1 = 0
           theta1_2 = 0
@@ -254,7 +280,12 @@ class Robot {
 
         // solve theta5
         for (let i = 0; i < 2; i++) {
-          const theta5Condition = -ax * math.sin(Theta1[i * 4]) + ay * math.cos(Theta1[i * 4])
+          let theta5Condition = -ax * math.sin(Theta1[i * 4]) + ay * math.cos(Theta1[i * 4])
+          if (theta5Condition > 1) {
+            theta5Condition = 1
+          } else if (theta5Condition < -1) {
+            theta5Condition = -1
+          }
           const theta5_1 = math.acos(theta5Condition)
           const theta5_2 = -math.acos(theta5Condition)
           for (let j = 0; j < 2; j++) {
@@ -292,12 +323,16 @@ class Robot {
           const T14 = math.multiply(math.multiply(math.inv(T01), T), math.inv(T46))
           const x = T14.get([0, 3])
           const y = T14.get([2, 3])
-          const theta3Condition = (Math.pow(x, 2) + Math.pow(y, 2) - Math.pow(this.#As[2], 2) - Math.pow(this.#As[3], 2)) / (2 * this.#As[2] * this.#As[3])
+          theta3Condition = (Math.pow(x, 2) + Math.pow(y, 2) - Math.pow(this.#As[2], 2) - Math.pow(this.#As[3], 2)) / (2 * this.#As[2] * this.#As[3])
           if (math.abs(theta3Condition) > 1) {
             for (let j = 0; j < 2; j++) {
-              Theta3.push(0)
-              Theta2.push(0)
-              Theta4.push(0)
+              Theta3.push(null)
+              Theta2.push(null)
+              Theta4.push(null)
+
+              Theta1[i * 2 + j] = null
+              Theta5[i * 2 + j] = null
+              Theta6[i * 2 + j] = null
             }
             continue
           }
@@ -332,7 +367,10 @@ class Robot {
 
     return [Theta1, Theta2, Theta3, Theta4, Theta5, Theta6].map((value, index) => {
       return value.map(value1 => {
-        return value1 - this.#Thetas[index]
+        if (value1 === null) {
+          return null
+        }
+        return Robot.wrap(value1 - this.#Thetas[index])[0]
       })
     })
   }
