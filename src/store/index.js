@@ -48,6 +48,9 @@ export default createStore({
     axisAngle: ((state, getters) => {
       return Transformation.RToAxisAngle(getters.R)
     }),
+    Jacobian: (state) => {
+      return robot.getJacobian([...state.Q])
+    }
   },
   mutations: {
     confirm(state, paras) {

@@ -60,10 +60,10 @@
           <template v-else-if="spaceStateEnum.DESCARTES === trajectoryPara.spaceState">{{ descartesName[index - 1] }}:
           </template>
           <input class="ml-4 input-number" type="number" v-fixed="{obj: trajectoryPara, key: 'aMax', index: index-1}"/>
-          <template v-if="spaceStateEnum.JOINT === trajectoryPara.spaceState">(rad/s)</template>
+          <template v-if="spaceStateEnum.JOINT === trajectoryPara.spaceState">(rad/s<sup>2</sup>)</template>
           <template v-else-if="spaceStateEnum.DESCARTES === trajectoryPara.spaceState">
-            <template v-if="index-1 < 3">(m/s^2)</template>
-            <template v-else>(rad/s^2)</template>
+            <template v-if="index-1 < 3">(m/s<sup>2</sup>)</template>
+            <template v-else>(rad/s<sup>2</sup>)</template>
           </template>
         </v-col>
       </template>

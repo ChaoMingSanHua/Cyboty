@@ -328,7 +328,7 @@
     <visual>
       <origin
         xyz="0 0 0"
-        rpy="0 0 0" />
+        rpy="0 -1.5708 0" />
       <geometry>
         <mesh
           filename="package://ER15-1400/meshes/link_6.STL" />
@@ -354,7 +354,7 @@
     type="continuous">
     <origin
       xyz="0.1 0 0"
-      rpy="-0.0013162 0 0" />
+      rpy="1.5708 0 1.5708" />
     <parent
       link="link_5" />
     <child

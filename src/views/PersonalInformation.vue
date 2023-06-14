@@ -7,11 +7,17 @@
       </div>
 
       <div class="text-center my-4">
-        <v-avatar class="mx-auto" size="100">
+        <v-avatar class="mx-auto author-avatar" size="100">
           <v-img width="100" src="/headPortrait.png"/>
         </v-avatar>
-        <div class="text-center my-4">潮鸣散花</div>
-        <div class="text-center my-4">热爱可达星辰彼岸</div>
+        <div class="text-center my-2 text-h6 font-weight-bold author-name">潮鸣散花</div>
+        <div class="text-center my-2 text-h7 font-weight-light author-intro">热爱可达星辰彼岸</div>
+
+        <div class="blog-contact">
+          <a class="mx-2 iconfont iconbilibili" target="_blank" :href="bilibiliHref"/>
+          <a class="mx-2 iconfont icongitee-fill-round" target="_blank" :href="giteeHref"/>
+          <a class="mx-2 iconfont icongithub" target="_blank" :href="githubHref"/>
+        </div>
       </div>
 
       <a class="reward-btn text-center mt-4">
@@ -59,16 +65,22 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue';
+import {reactive, ref} from 'vue';
 import weixin from "@/assets/payment/weixin.jpg"
 import zhifubao from "@/assets/payment/zhifubao.jpg"
-const friendModules = import.meta.glob("@/assets/friend/*.*")
-
-const friendAvatars = Object.keys(friendModules)
+const friendModules = import.meta.glob("@/assets/friend/*.*", {eager: true})
+const friendAvatars = []
+Object.keys(friendModules).forEach(value => {
+  friendAvatars.push(friendModules[value].default)
+})
 const friendLinkList = reactive([])
 
 const friendNames = ["星夜未央", "zero的光剑", "兔角", "终极"]
 const friendIntros = ["慎独", "吾身已成铁，吾心乃空灵", "世界充满了宽恕", "快乐要有悲伤作陪，雨过应该就有天晴"]
+
+const bilibiliHref = ref("https://space.bilibili.com/209673001")
+const giteeHref = ref("https://gitee.com/chaomingsanhua")
+const githubHref = ref("https://github.com/chaomingsanhua")
 
 friendNames.forEach((value, index) => {
   friendLinkList.push({
@@ -162,6 +174,48 @@ friendNames.forEach((value, index) => {
   max-width: 970px;
   //padding: 50px 40px;
   //margin: 20px auto 40px auto;
+
+  .author-avatar {
+    transition: all 0.5s;
+
+    &:hover {
+      transform: rotate(360deg);
+    }
+  }
+
+  .author-intro {
+    color: #1f2d3d;
+  }
+
+  .blog-contact {
+    height: 16px;
+    line-height: 16px;
+    a {
+      &:link {
+        text-decoration: none;
+      }
+      vertical-align: top;
+      color: #49b1f5;
+    }
+
+    .iconbilibili {
+      position: relative;
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      &:after {
+        display: inline-block;
+        width: 16px;
+        height: 16px;
+        position: absolute;
+        bottom: 0;
+        right: 0;
+        content: "";
+        background-image: url("../assets/favicon/bilibili.ico");
+        background-size: cover;
+      }
+    }
+  }
 }
 
 .link-title {

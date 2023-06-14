@@ -56,6 +56,8 @@ const navLink = reactive([
     a {
       font-size: 18px;
       font-weight: bold;
+
+      color: #49b1f5;
     }
   }
 
@@ -69,10 +71,12 @@ const navLink = reactive([
 
       .menu-btn {
         text-shadow: 0.05rem 0.05rem 0.1rem rgba(0, 0, 0, 0.3);
+        color: #49b1f5;
 
         &:hover {
           color: #49b1f5;
         }
+
       }
     }
   }

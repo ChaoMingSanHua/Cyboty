@@ -28,7 +28,7 @@
 
     <v-container class="my-4 text-center">
       <div class="text-h5 my-3">姿态</div>
-      <div class="text-h6 my-2">变换矩阵</div>
+      <div class="text-h6 my-2">旋转矩阵</div>
       <v-row justify="center">
         <v-col class="v-col-12 v-col-md-4">
           <v-table>
@@ -59,6 +59,8 @@
         </v-col>
       </v-row>
 
+      <v-divider />
+
       <div class="text-h6 my-2">轴角</div>
       <v-row justify="space-around">
         <v-col class="v-col-12 v-col-md-3">
@@ -77,6 +79,21 @@
         </v-col>
       </v-row>
       <v-divider />
+    </v-container>
+
+    <v-container class="my-4 text-center">
+      <div class="text-h5 my-3">雅可比矩阵</div>
+      <v-row justify="center">
+        <v-col class="v-col-12">
+          <v-table>
+            <tbody>
+            <tr v-for="i in 6">
+              <td v-for="j in 6">{{ $filters.toFixed(store.getters.Jacobian.get([i - 1, j - 1])) }}</td>
+            </tr>
+            </tbody>
+          </v-table>
+        </v-col>
+      </v-row>
     </v-container>
   </v-card>
 </template>
