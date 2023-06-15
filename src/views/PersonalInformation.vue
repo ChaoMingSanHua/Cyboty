@@ -11,7 +11,7 @@
           <v-img width="100" src="/headPortrait.png"/>
         </v-avatar>
         <div class="text-center my-2 text-h6 font-weight-bold author-name">潮鸣散花</div>
-        <div class="text-center my-2 text-h7 font-weight-light author-intro">热爱可达星辰彼岸</div>
+        <div class="text-center my-2 font-weight-light author-intro">热爱可达星辰彼岸</div>
 
         <div class="blog-contact">
           <a class="mx-2 iconfont iconbilibili" target="_blank" :href="bilibiliHref"/>
@@ -187,6 +187,7 @@ friendNames.forEach((value, index) => {
 
   .author-intro {
     color: #1f2d3d;
+    font-size: 13px;
   }
 
   .blog-contact {
