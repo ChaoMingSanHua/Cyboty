@@ -3,8 +3,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 const routes = [
   {
-    path: '/cyboty-dist5/',
-    redirect: '/cyboty-dist5/parameter_configuration'
+    path: '/',
+    redirect: '/parameter_configuration',
   },
   {
     // path: '/',
@@ -19,31 +19,31 @@ const routes = [
     //     component: () => import(/* webpackChunkName: "home" */ '@/views/ParameterConfiguration.vue'),
     //   },
     // ],
-    path: '/cyboty-dist5/parameter_configuration',
+    path: '/parameter_configuration',
     component: () => import('@/views/ParameterConfiguration')
   },
   {
-    path: '/cyboty-dist5/dh_parameter',
+    path: '/dh_parameter',
     component: () => import('@/views/DHParameter')
   },
   {
-    path: '/cyboty-dist5/forward_kinematics',
+    path: '/forward_kinematics',
     component: () => import('@/views/ForwardKinematics')
   },
   {
-    path: '/cyboty-dist5/inverse_kinematics',
+    path: '/inverse_kinematics',
     component: () => import('@/views/InverseKinematics')
   },
   {
-    path: '/cyboty-dist5/workspace',
+    path: '/workspace',
     component: () => import('@/views/WorkSpace')
   },
   {
-    path: '/cyboty-dist5/trajectory_planning',
+    path: '/trajectory_planning',
     component: () => import('@/views/TrajectoryPlanning')
   },
   {
-    path: '/cyboty-dist5/personal_information',
+    path: '/personal_information',
     component: () => import('@/views/PersonalInformation')
   }
 ]

@@ -95,7 +95,7 @@ const loadSTL = async () => {
   })
 
   const xmlHttp = new XMLHttpRequest()
-  xmlHttp.open("GET", "/" + type + "/urdf/robot.urdf", false)
+  xmlHttp.open("GET", process.env.BASE_URL + type + "/urdf/robot.urdf", false)
   xmlHttp.send()
   const xmlDoc = xmlHttp.responseXML
   const robotNode = xmlDoc.getElementsByTagName("robot")[0]

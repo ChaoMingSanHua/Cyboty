@@ -20,7 +20,9 @@ export default defineConfig({
       },
     }),
   ],
-  define: { 'process.env': {} },
+  define: { 'process.env': {
+      BASE_URL:'/cyboty-dist/'
+    } },
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
@@ -38,5 +40,5 @@ export default defineConfig({
   server: {
     port: 3000,
   },
-  base: '/cyboty-dist5/'
+  base: '/cyboty-dist/'
 })
