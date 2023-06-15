@@ -7,10 +7,10 @@
         <div class="my-3 text-center text-h5 font-weight-medium">机型选择</div>
       </v-col>
       <v-col class="v-col-12 v-col-md-6">
-        <input type="radio" name="robotType" :value="RobotTypeEnum.INDUSTRY" v-model="robotType"> 工业型
+        <input type="radio" name="robotType" :value="RobotTypeEnum.INDUSTRY" v-model="store.state.robotType"> 工业型
       </v-col>
       <v-col class="v-col-12 v-col-md-6">
-        <input type="radio" name="robotType" :value="RobotTypeEnum.COOPERATION" v-model="robotType"> 协作型
+        <input type="radio" name="robotType" :value="RobotTypeEnum.COOPERATION" v-model="store.state.robotType"> 协作型
       </v-col>
     </v-row>
     <v-divider />
@@ -42,12 +42,12 @@
       </v-col>
     </v-row>
     <v-divider />
-    <confirm-configuration @test="confirm"/>
+    <confirm-configuration @confirm="confirm"/>
   </v-card>
 </template>
 
 <script setup>
-import {computed, reactive, ref} from "vue";
+import {computed, reactive, ref, watch} from "vue";
 import {useStore} from "vuex";
 import {RobotTypeEnum, robot} from "@/utils/robot";
 import ConfirmConfiguration from "@/components/dialog/ConfirmConfiguration"
@@ -86,11 +86,32 @@ const paras = reactive([
   },
 ])
 
+store.commit("clearConfirm")
+
+const industryParameters = [0.376, 0.05, 0.43, 0, 0.05, 0.4275, 0.089]
+const cooperationParameters = [0.089, 0.425, 0.392, 0.109, 0.095, 0.08, 0.0]
+
+watch(() => store.state.robotType, (value) => {
+  switch (value) {
+    case RobotTypeEnum.INDUSTRY:
+      industryParameters.forEach((value1, index) => {
+        paras[index].value = value1
+      })
+      break
+    case RobotTypeEnum.COOPERATION:
+      cooperationParameters.forEach((value1, index) => {
+        paras[index].value = value1
+      })
+      break
+    default:
+      break
+  }
+})
+
 const confirm = () => {
   store.commit("confirm", paras)
-  // console.log(store.)
   const robotPara = {
-    robotType: robotType.value,
+    robotType: store.state.robotType,
     linkLengths: [
       paras[0].value,
       paras[1].value,

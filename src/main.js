@@ -6,6 +6,7 @@
 
 // Components
 import App from './App.vue'
+import "./assets/css/iconfont.css";
 
 // Composables
 import { createApp } from 'vue'

@@ -1,7 +1,7 @@
 import {createStore} from "vuex";
 import createPersistedState from "vuex-persistedstate"
 import * as math from "mathjs"
-import * as transformation from "@/utils/transformation";
+import {Transformation} from "@/utils/transformation";
 import {robot} from "@/utils/robot";
 
 export default createStore({
@@ -20,6 +20,8 @@ export default createStore({
     // Joint Limit
     qLowerLimit: [-Math.PI / 2, -Math.PI / 2, -Math.PI / 2, -Math.PI / 2, -Math.PI / 2, -Math.PI / 2],
     qUpperLimit: [Math.PI / 2, Math.PI / 2, Math.PI / 2, Math.PI / 2, Math.PI / 2, Math.PI / 2],
+
+    robotType: 0,
   },
   getters: {
     dhPara: (state) => {
@@ -30,30 +32,25 @@ export default createStore({
         Theta: state.Theta
       }
     },
-    T: (state, getters) => {
+    T: (state) => {
       return robot.fKine([...state.Q])
     },
-    px: ((state, getters) => {
-      return getters.T.get([0, 3])
-    }),
-    py: ((state, getters) => {
-      return getters.T.get([1, 3])
-    }),
-    pz: ((state, getters) => {
-      return getters.T.get([2, 3])
-    }),
-    roll: ((state, getters) => {
-      return transformation.R2rpy(getters.T)[0]
-    }),
-    pitch: ((state, getters) => {
-      return transformation.R2rpy(getters.T)[1]
-    }),
-    yaw: ((state, getters) => {
-      return transformation.R2rpy(getters.T)[2]
-    }),
     X: ((state, getters) => {
-      return [getters.px, getters.py, getters.pz, getters.roll, getters.pitch, getters.yaw]
-    })
+      return Transformation.TransToX(getters.T)
+    }),
+    R: ((state, getters) => {
+      // return getters.T.subset(math.index(math.range(0, 3), math.range(0, 3)))
+      return Transformation.TransToRp(getters.T).R
+    }),
+    quaternion: ((state, getters) => {
+      return Transformation.RToQuaternion(getters.R)
+    }),
+    axisAngle: ((state, getters) => {
+      return Transformation.RToAxisAngle(getters.R)
+    }),
+    Jacobian: (state) => {
+      return robot.getJacobian([...state.Q])
+    }
   },
   mutations: {
     confirm(state, paras) {
@@ -67,11 +64,15 @@ export default createStore({
 
       state.configComplete = true
     },
+    clearConfirm(state) {
+      state.configComplete = false
+    },
     setQ(state, qs) {
       qs.forEach((value, index) => {
         state.Q[index] = value
       })
     }
+
   },
   actions: {
   },
