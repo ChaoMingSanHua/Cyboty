@@ -55,41 +55,40 @@ import ConfirmConfiguration from "@/components/dialog/ConfirmConfiguration"
 const store = useStore()
 
 const robotType = ref(0)
+const industryParameters = [0.5, 0.05, 0.5, 0, 0.05, 0.5, 0.1]
+const cooperationParameters = [0.089, 0.425, 0.392, 0.109, 0.095, 0.08, 0.0]
 const paras = reactive([
   {
-    name: "l1",
-    value: store.state.D[0],
+    name: "L1",
+    value: industryParameters[0],
   },
   {
-    name: "l2",
-    value: store.state.A[1],
+    name: "L2",
+    value: industryParameters[1],
   },
   {
-    name: "l3",
-    value: store.state.A[2],
+    name: "L3",
+    value: industryParameters[2],
   },
   {
-    name: "l4",
-    value: store.state.D[2],
+    name: "L4",
+    value: industryParameters[3],
   },
   {
-    name: "l5",
-    value: store.state.A[3],
+    name: "L5",
+    value: industryParameters[4],
   },
   {
-    name: "l6",
-    value: store.state.D[3],
+    name: "L6",
+    value: industryParameters[5],
   },
   {
-    name: "l7",
-    value: store.state.D[5],
+    name: "L7",
+    value: industryParameters[6],
   },
 ])
 
 store.commit("clearConfirm")
-
-const industryParameters = [0.376, 0.05, 0.43, 0, 0.05, 0.4275, 0.089]
-const cooperationParameters = [0.089, 0.425, 0.392, 0.109, 0.095, 0.08, 0.0]
 
 watch(() => store.state.robotType, (value) => {
   switch (value) {
