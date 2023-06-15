@@ -69,14 +69,16 @@ import {reactive, ref} from 'vue';
 import weixin from "@/assets/payment/weixin.jpg"
 import zhifubao from "@/assets/payment/zhifubao.jpg"
 const friendModules = import.meta.glob("@/assets/friend/*.*", {eager: true})
+import friendList from "@/assets/friend/friend_list.json"
+
 const friendAvatars = []
 Object.keys(friendModules).forEach(value => {
   friendAvatars.push(friendModules[value].default)
 })
 const friendLinkList = reactive([])
 
-const friendNames = ["星夜未央", "zero的光剑", "兔角", "终极"]
-const friendIntros = ["慎独", "吾身已成铁，吾心乃空灵", "世界充满了宽恕", "快乐要有悲伤作陪，雨过应该就有天晴"]
+const friendNames = Object.keys(friendList)
+const friendIntros = Object.values(friendList)
 
 const bilibiliHref = ref("https://space.bilibili.com/209673001")
 const giteeHref = ref("https://gitee.com/chaomingsanhua")
@@ -195,7 +197,7 @@ friendNames.forEach((value, index) => {
         text-decoration: none;
       }
       vertical-align: top;
-      color: #49b1f5;
+      color: #2097C7;
     }
 
     .iconbilibili {

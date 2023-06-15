@@ -753,7 +753,7 @@ const initPathChart = () => {
   }
 
   const xAxisNames = ["x(m)", "x(m)", "y(m)"]
-  const yAxisNames = ["z(m)", "y(m)", "y(m)"]
+  const yAxisNames = ["z(m)", "y(m)", "z(m)"]
   const titles = ["X-Z", "X-Y", "Y-Z"]
   const titleOptions = titles.map((value, index) => {
     return {
