@@ -68,7 +68,7 @@
 import {reactive, ref} from 'vue';
 import weixin from "@/assets/payment/weixin.jpg"
 import zhifubao from "@/assets/payment/zhifubao.jpg"
-const friendModules = import.meta.glob("@/assets/friend/*.*", {eager: true})
+const friendModules = import.meta.glob("@/assets/friend/pictures/*.*", {eager: true})
 import friendList from "@/assets/friend/friend_list.json"
 
 const friendAvatars = []
