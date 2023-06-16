@@ -107,7 +107,6 @@ const loadSTL = async () => {
 
   const link0Geometry = await stlLoader.loadAsync(process.env.BASE_URL + type + "/meshes/link_0.stl");
   const link0Material = new THREE.MeshPhongMaterial({color:0xDDDADA})
-  // const link0 = new THREE.Mesh(link0Geometry, link0Material);
   link0 = new THREE.Mesh(link0Geometry, link0Material);
   link0.position.set(...linkNodes[0].getElementsByTagName("visual")[0].getElementsByTagName("origin")[0].getAttribute("xyz").split(" ").map(Number))
   const link0Euler = new THREE.Euler(...linkNodes[0].getElementsByTagName("visual")[0].getElementsByTagName("origin")[0].getAttribute("rpy").split(" ").map(Number))
