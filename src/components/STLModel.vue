@@ -97,12 +97,15 @@ const loadSTL = async () => {
   const xmlHttp = new XMLHttpRequest()
   xmlHttp.open("GET", process.env.BASE_URL + type + "/urdf/robot.urdf", false)
   xmlHttp.send()
-  const xmlDoc = xmlHttp.responseXML
+  // const xmlDoc = xmlHttp.responseXML
+  const xmlString = xmlHttp.response
+  const parser = new DOMParser();
+  const xmlDoc = parser.parseFromString(xmlString, "text/xml");
   const robotNode = xmlDoc.getElementsByTagName("robot")[0]
   const linkNodes = robotNode.getElementsByTagName("link")
   const jointNodes = robotNode.getElementsByTagName("joint")
 
-  const link0Geometry = await stlLoader.loadAsync(process.env.BASE_URL + type + "/meshes/link_0.STL");
+  const link0Geometry = await stlLoader.loadAsync(process.env.BASE_URL + type + "/meshes/link_0.stl");
   const link0Material = new THREE.MeshPhongMaterial({color:0xDDDADA})
   // const link0 = new THREE.Mesh(link0Geometry, link0Material);
   link0 = new THREE.Mesh(link0Geometry, link0Material);
@@ -124,7 +127,7 @@ const loadSTL = async () => {
     joints.push(joint)
     parent.add(joint)
 
-    const linkGeometry = await stlLoader.loadAsync(process.env.BASE_URL + type + "/meshes/link_" + (i + 1) + ".STL");
+    const linkGeometry = await stlLoader.loadAsync(process.env.BASE_URL + type + "/meshes/link_" + (i + 1) + ".stl");
     const linkMaterial = new THREE.MeshPhongMaterial({color:0xDDDADA})
     const link = new THREE.Mesh(linkGeometry, linkMaterial);
     link.position.set(...linkNodes[i + 1].getElementsByTagName("visual")[0].getElementsByTagName("origin")[0].getAttribute("xyz").split(" ").map(Number))
