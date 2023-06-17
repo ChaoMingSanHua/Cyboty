@@ -648,6 +648,9 @@ class Plan {
           }
         } else {
           sFunction = this.#pathLine(PLine.at(-2), PLine.at(-1))
+          sI = 1
+          dsI = 0
+          ddsI = 0
         }
       }
       const {p, dp, ddp} = sFunction(sI, dsI, ddsI)
